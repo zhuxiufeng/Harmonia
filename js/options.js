@@ -21,7 +21,7 @@ if (logoHolder) {
             if (latestVersionResponse) {
                 requestBody = latestVersionResponse;
             } else {
-                const apiRequest = await fetch('https://api.github.com/repos/pvrs12/Anesidora/releases/latest');
+                const apiRequest = await fetch('https://api.github.com/repos/zhuxiufeng/Harmonia/releases/latest');
                 requestBody = latestVersionResponse = await apiRequest.json();
             }
         } catch(e) {
