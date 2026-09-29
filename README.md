@@ -129,3 +129,20 @@ anesidora-mv3/
     ├── platform_specific.js # 平台特异性适配（MV3 action API）
     └── collect_errors.js    # 运行时错误收集与调试
 ```
+
+---
+
+## 🙏 致谢与参考开源项目 / Acknowledgements
+
+本项目在架构重构与开发过程中，参考并继承了以下优秀的开源社区成果，谨在此表示衷心感谢：
+
+1. **[Anesidora (MV2 原版)](https://github.com/pvrs12/Anesidora)**：本项目的基础原型，感谢原作者 `pvrs12` 及贡献者在经典 MV2 时代开创的精致 UI 与 Pandora 客户端实现。
+2. **[Pandora JSON API Documentation](https://6xq.net/pandora-apidoc/json/)**：感谢社区整理的非官方 Pandora 逆向协议文档。
+3. **[LRCLIB](https://lrclib.net/)**：提供免费、开放、高质量的歌词数据检索 API。
+
+---
+
+## 📄 开源许可证 / License
+
+本项目遵循 [GNU General Public License v2.0 (GPL-2.0)](./LICENSE) 协议开源。
+
