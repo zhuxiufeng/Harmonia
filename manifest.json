@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "Harmonia",
+  "version": "3.1.0",
+  "description": "Tabs? Where we're listening, we don't need tabs. (Manifest V3 Edition)",
+  "icons": {
+    "16": "images/anesidora-16.png",
+    "48": "images/anesidora-48.png",
+    "128": "images/anesidora-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "images/anesidora-16.png",
+      "19": "images/anesidora-19.png",
+      "48": "images/anesidora-48.png",
+      "128": "images/anesidora-128.png"
+    },
+    "default_popup": "cozy.htm"
+  },
+  "background": {
+    "service_worker": "js/sw.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.htm",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "offscreen",
+    "storage",
+    "declarativeNetRequest",
+    "commands"
+  ],
+  "host_permissions": [
+    "*://*.pandora.com/*",
+    "*://*.p-cdn.com/*",
+    "*://*.p-cdn.us/*",
+    "*://lrclib.net/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset",
+        "enabled": true,
+        "path": "declarativeNetRules.json"
+      }
+    ]
+  },
+  "commands": {
+    "pause_play": {
+      "description": "Play/Pause"
+    },
+    "skip_song": {
+      "description": "Skip forward"
+    },
+    "skip_back": {
+      "description": "Skip back"
+    },
+    "_execute_action": {
+      "description": "Open player popup",
+      "suggested_key": {
+        "default": "Ctrl+Space"
+      }
+    }
+  }
+}

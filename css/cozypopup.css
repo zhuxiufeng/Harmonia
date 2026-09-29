@@ -1,0 +1,1524 @@
+@layer defaults {
+	.cozy .icon {
+		width: 1.5rem;
+		height: 1.5rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.cozy input[type="range"] {
+		border-radius: 4px;
+		accent-color: var(--bar-stroke, var(--icon-default-stroke));
+		border: solid 1px var(--bar-stroke, var(--icon-default-stroke));
+		appearance: none;
+		overflow: hidden;
+		overflow: clip;
+        line-height: 0;
+        background: var(--bar-fill, transparent);
+	}
+		/*
+			For future reference, styling cross-browser range inputs is utterly cursed.
+
+			`background: transparent` only works if `appearance: none` is set, and
+			there's *no* equivalent to ::-moz-range-progress in webkit so I just have to set
+			a gigantic box shadow on the thumb. what??
+
+			Also, there's a different way of making a vertical input for every engine.
+			I gave up and just used a wrapped transform. Because of course.
+
+		*/
+		.cozy input[type="range"]:focus-visible {
+			outline: solid 1px var(--icon-active-stroke);
+		}
+		.cozy input[type="range"]::-moz-range-track {
+			background: var(--bar-fill, transparent);
+		}
+		.cozy input[type="range"]::-webkit-slider-runnable-track {
+			background: var(--bar-fill, transparent);
+		}
+		.cozy input[type="range"]::-moz-range-progress {
+			height: 100%;
+			background: var(--bar-progress-fill, var(--bar-stroke, var(--icon-default-stroke)));
+		}
+		.cozy input[type="range"]::-moz-range-thumb {
+			height: 100%;
+			border: none;
+			background-color: var(--bar-thumb-color, var(--bar-progress-fill, var(--bar-stroke, var(--icon-default-stroke))));
+		}
+		.cozy input[type="range"]::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			height: 100%;
+			width: 6px;
+			border: none;
+			border-radius: 3px;
+			background-color: var(--bar-thumb-color, var(--bar-progress-fill, var(--icon-active-stroke, #ff9100)));
+			box-shadow: -500px 0 0 500px var(--bar-progress-fill, var(--icon-active-stroke, #ff9100));
+			cursor: pointer;
+		}
+
+
+	.cozy .search {
+		display: flex;
+		flex-flow: row nowrap;
+		align-items: stretch;
+		justify-content: stretch;
+
+
+		background: rgba(128, 128, 128, 0.15);
+		border: none;
+		border-radius: 0.3125rem; /* 5px */
+		margin: 0.625rem 1.25rem; /* 10px 20px */
+
+		font-size: 1.2rem;
+	}
+	.cozy .search:focus-within {
+		outline: currentColor solid 2px;
+	}
+	.cozy .search > input:focus {
+		outline: none;
+	}
+	.cozy .search > label {
+		display: flex;
+	}
+	.cozy .search > label > .icon {
+		width: calc(1em + 0.625rem); /* + 10px */
+		height: calc(1em + 1.25rem); /* + 20px */
+		padding: 0.625rem; /* 10px */
+		padding-right: 0;
+        stroke: var(--icon-default-stroke);
+        fill: var(--icon-default-fill);
+	}
+	.cozy .search > input {
+		padding: 0.5rem 0.625rem; /* 8px 10px */
+		background: none;
+		border: none;
+		color: inherit;
+		font-family: inherit;
+		font-weight: 400;
+		font-size: inherit;
+		width: 100%;
+		line-height: 100%;
+	}
+
+	#anesidora, .restOfPreview.cozy {
+		position: relative;
+
+		background: var(--background-color);
+		color: var(--text-color);
+		font-family: var(--font-family);
+		font-optical-sizing: auto;
+
+		display: flex;
+		flex-flow: column nowrap;
+		align-items: start;
+
+		overflow: hidden;
+		overflow: clip;
+
+		color-scheme: var(--color-scheme-type);
+	}
+		.cozy > .background-blur {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+
+			filter: blur(calc(max(var(--viewport-width, 100vw), var(--viewport-height, 100vh)) * var(--album-background-blur-size, 0.15))) saturate(var(--album-background-saturation, 4));
+
+			object-fit: cover;
+			object-position: center;
+
+			opacity: 0;
+			pointer-events: none;
+		}
+		.cozy > .background-blur.loaded {
+			transition: opacity 150ms;
+			opacity: var(--album-background-strength);
+		}
+		.cozy > .navigation {
+			display: flex;
+			flex-flow: row nowrap;
+
+			width: 100%;
+
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			padding: 0.3125rem 0.625rem; /* 5px 10px */
+
+			justify-content: space-between;
+			align-items: center;
+
+			background: var(--tab-navigation-background-color);
+			color: var(--tab-navigation-text-color);
+
+            z-index: 3;
+		}
+
+		/* #region navigation */
+			.cozy > .navigation > .skipnav {
+				padding: 0.375rem; /* 6px */
+				position: fixed;
+				top: -100%;
+				left: 0;
+				background: var(--tab-navigation-background-color);
+				color: var(--tab-navigation-text-color);
+				border-right: 1px solid  var(--tab-navigation-text-color);
+				border-bottom: 1px solid  var(--tab-navigation-text-color);
+				border-bottom-right-radius: 0.5rem /* 8px */;
+				transition: top 250ms ease-in-out;
+				z-index: 100;
+			}
+				.cozy > .navigation > .skipnav:focus {
+					top: 0;
+				}
+
+			.cozy > .navigation > .navigation-button {
+				border: none;
+				background: none;
+
+				display: flex; /* Removes line-height */
+
+				cursor: pointer;
+
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 150ms;
+			}
+
+			.cozy > .navigation > .navigation-button.visible {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+
+				.cozy > .navigation > .navigation-button > svg.icon {
+					width: var(--tab-navigation-icon-size, 30px);
+					height: var(--tab-navigation-icon-size, 30px);
+					stroke: var(--icon-default-stroke);
+					stroke-width: 1.5;
+					z-index: 2;
+				}
+
+			.cozy > .navigation > .navigation-scroll-container {
+				overflow: clip;
+				width: 0;
+				flex-grow: 1;
+			}
+				.cozy > .navigation > .navigation-scroll-container > .navigation-scroll-items {
+					display: flex;
+					flex-flow: row nowrap;
+
+					transform-origin: left center;
+
+					text-align: center;
+					font-size: 1rem;
+					font-weight: 500;
+					transform: translateX(calc(var(--current-screen-index) * -100%));
+					transition: transform 150ms;
+				}
+
+					.cozy > .navigation > .navigation-scroll-container > .navigation-scroll-items > span {
+						flex-shrink: 0;
+						width: 100%;
+						text-align: center;
+
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+		/* #endregion navigation */
+
+		.cozy > main {
+			display: flex;
+			flex-flow: row nowrap;
+			flex-grow: 1;
+			height: 0;
+			width: calc(var(--viewport-width) * 4);
+			align-items: stretch;
+			justify-content: stretch;
+
+			transform: translateX(calc(-1 * var(--current-screen-index) * var(--viewport-width)));
+			transition: transform 250ms;
+		}
+			.cozy > main > section {
+				display: flex;
+				flex-flow: column nowrap;
+
+				width: var(--viewport-width);
+				max-height: 100%;
+			}
+				.cozy > main > .history {
+					overflow-y: auto;
+					overflow-x: clip;
+
+				}
+				/* #region section.history */
+					.cozy > main > .history > ul {
+						display: flex;
+						flex-flow: column nowrap;
+						align-items: stretch;
+						justify-content: start;
+					}
+						.cozy > main > .history > ul > .history-item {
+							display: flex;
+							flex-flow: row nowrap;
+							align-items: center;
+							justify-content: start;
+
+							width: 100%;
+							padding: 5px 10px;
+							gap: 0.5rem; /* 8px */
+						}
+						.cozy > main > .history > ul > .history-item:nth-child(2n) {
+							background: var(--alternating-row-background);
+						}
+							.cozy > main > .history > ul > .history-item > .cover {
+								width: var(--history-cover-size, 4.5rem);
+								height: var(--history-cover-size, 4.5rem);
+								flex-shrink: 0;
+                                object-fit: cover;
+                                object-position: contain;
+							}
+							.cozy > main > .history > ul > .history-item > .vwrap {
+								display: flex;
+								flex-flow: column nowrap;
+								flex-grow: 1;
+								width: 0;
+								height: 100%;
+
+								padding: 0.1875rem 0; /* 3px 0 */
+
+                                justify-content: center;
+							}
+								.cozy > main > .history > ul > .history-item > .vwrap > .artist,
+								.cozy > main > .history > ul > .history-item > .vwrap > .title {
+									white-space: nowrap;
+									overflow: hidden;
+									text-overflow: ellipsis;
+									height: 1.2em;
+								}
+								.cozy > main > .history > ul > .history-item > .vwrap > .title {
+									font-weight: 500;
+									font-size: 1.125rem; /* 18px */
+									line-height: 125%;
+								}
+								.cozy > main > .history > ul > .history-item > .vwrap > .artist {
+									font-weight: normal;
+									font-size: 0.875rem; /* 14px */
+									line-height: 100%;
+								}
+								.cozy > main > .history > ul > .history-item > .vwrap > .actions {
+									display: flex;
+									flex-flow: row nowrap;
+
+									gap: 0.5rem;
+
+									width: 100%;
+
+                                    margin-top: 0.5rem;
+
+									justify-content: start;
+								}
+
+									.cozy > main > .history > ul > .history-item > .vwrap > .actions > .action {
+										width: var(--history-icon-size);
+										height: var(--history-icon-size);
+
+										cursor: pointer;
+									}
+									.cozy > main > .history > ul > .history-item > .vwrap > .actions > .action:disabled {
+										opacity: 0.3;
+										cursor: not-allowed;
+									}
+                                        .cozy > main > .history > ul > .history-item > .vwrap > .actions > .action:not(.active, :disabled):hover > .icon {
+                                            fill: var(--icon-hover-fill);
+                                            stroke: var(--icon-hover-stroke);
+                                        }
+										.cozy > main > .history > ul > .history-item > .vwrap > .actions > .action > .icon {
+											width: var(--history-icon-size);
+											height: var(--history-icon-size);
+                                            fill: var(--icon-default-fill);
+                                            stroke: var(--icon-default-stroke);
+                                            transition: fill 150ms, stroke 150ms;
+										}
+										.cozy > main > .history > ul > .history-item > .vwrap > .actions > .action.active > .icon {
+											fill: var(--icon-active-fill);
+                                            stroke: var(--icon-active-stroke);
+										}
+										.cozy > main > .history > ul > .history-item > .vwrap > .actions > .action.download.active > .icon {
+											fill: transparent;
+										}
+				/* #endregion section.history */
+
+				.cozy > main > .player {
+					flex-grow: 1;
+
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					padding: 0.5rem calc(var(--viewport-width) * 0.05); /* 10px */
+					gap: 0.3125rem; /* 5px */
+
+					position: relative;
+					overflow-y: auto;
+					overflow-x: hidden;
+					box-sizing: border-box;
+				}
+				/* #region section.player */
+                    .cozy > main > .player > .coverHolder {
+						flex-shrink: 1;
+						height: calc(var(--player-cover-max-size) * min(var(--viewport-width), var(--viewport-height)));
+                        display: grid;
+                        grid-template-columns: auto minmax(0, 1fr) auto;
+                        grid-template-rows: auto minmax(0, 1fr) auto;
+                        grid-template-areas: ".  top   .  " "left cover right" ". bottom .";
+                        gap: 0.5rem;
+                        place-items: center;
+                        aspect-ratio: 1/1;
+                    }
+                    html:not(.popout-mode) .cozy > main > .player > .coverHolder {
+						max-height: min(210px, 42vh);
+						max-width: min(210px, 42vh);
+                    }
+                        .cozy > main > .player > .coverHolder > .cover {
+                            height: 100%;
+                            box-shadow: 0px 0.3125rem /* 5px */ 3.125rem /* 50px */ rgba(165, 192, 203, 0.25);
+                            border-radius: var(--player-cover-corner-radius, 15px);
+                            grid-area: cover;
+                        }
+                        .cozy > main > .player > .coverHolder > .volumewrap {
+                            --primary-axis: calc(100% * var(--volume-bar-size, 0.9));
+                            --cross-axis: 0.5rem;
+                            height: var(--cross-axis);
+                            width: var(--primary-axis);
+                            grid-area: var(--volume-bar-position, "right");
+                            line-height: 0;
+                            place-self: center;
+                        }
+                            .cozy > main > .player > .coverHolder > .volumewrap > .volume {
+                                height: var(--cross-axis);
+                                width: 100%;
+                                --bar-fill: var(--volume-bar-fill, transparent);
+                                --bar-progress-fill: var(--volume-bar-progress-fill, var(--icon-default-fill));
+                                --bar-thumb-color: var(--volume-bar-thumb-color, var(--bar-progress-fill));
+                                --bar-stroke: var(--volume-bar-stroke, var(--icon-default-stroke));
+                            }
+                            .cozy > main > .player > .coverHolder > .volumewrap[data-is-vertical] {
+                                --primary-axis: calc((var(--player-cover-max-size) * min(var(--viewport-width), var(--viewport-height))) * var(--volume-bar-size, 0.9));
+                                position: relative;
+                                height: var(--primary-axis);
+                                width: var(--cross-axis);
+                            }
+                            .cozy > main > .player > .coverHolder > .volumewrap[data-is-vertical] > .volume {
+                                width: var(--primary-axis);
+                                height: var(--cross-axis);
+                                transform: rotate(90deg);
+                                transform-origin: top left;
+                                direction: rtl;
+                                position: absolute;
+                                top: 0;
+                                left: 100%;
+                            }
+                            .cozy > main > .player > .coverHolder > .volumewrap[data-is-vertical] > .volume::-webkit-slider-thumb {
+                                box-shadow: 500px 0 0 500px var(--bar-progress-fill, var(--icon-default-stroke));
+                            }
+
+                    /* Original seekBar rule - still needed if seekBar is ever direct child */
+                    .cozy > main > .player > .seekBar {
+                        height: 0.5rem;
+                        width: calc((var(--player-cover-max-size) * min(var(--viewport-width), var(--viewport-height))) * var(--seek-bar-size, 0.9));
+                        --bar-fill: rgba(255, 255, 255, 0.12);
+                        --bar-progress-fill: #ff9100;
+                        --bar-thumb-color: #ff9100;
+                        --bar-stroke: transparent;
+                        accent-color: #ff9100;
+                    }
+                    /* In normal mode: hide entire seek-wrapper (time labels not needed), show raw seekBar inside */
+                    html:not(.popout-mode) .cozy > main > .player > .seek-wrapper {
+                        width: 90% !important;
+                        max-width: 90%;
+                        gap: 0 !important;
+                    }
+                    html:not(.popout-mode) .cozy > main > .player > .seek-wrapper > .time-current,
+                    html:not(.popout-mode) .cozy > main > .player > .seek-wrapper > .time-total {
+                        display: none !important;
+                    }
+                    /* SeekBar inside seek-wrapper: inherit sizing from parent, set CSS vars */
+                    .cozy > main > .player > .seek-wrapper > .seekBar {
+                        flex: 1;
+                        height: 0.5rem;
+                        min-width: 0;
+                        border-radius: 3px;
+                        background: rgba(255, 255, 255, 0.12);
+                        --bar-fill: rgba(255, 255, 255, 0.12);
+                        --bar-progress-fill: #ff9100;
+                        --bar-stroke: transparent;
+                        --bar-thumb-color: #ff9100;
+                        accent-color: #ff9100;
+                    }
+
+					.cozy > main > .player > .infoline {
+						max-width: 90%;
+						width: 100%;
+						display: block;
+						overflow: hidden;
+						white-space: nowrap;
+						text-align: center;
+						padding: 2px 0;
+						--infoline-scroll-amount: 0;
+						--infoline-scroll-duration: 5s;
+					}
+						.cozy > main > .player > .infoline > .infoline-content {
+							display: inline-block;
+							will-change: transform;
+							width: auto;
+							max-width: 100%;
+							text-overflow: ellipsis;
+							overflow: hidden;
+							white-space: nowrap;
+						}
+						.cozy > main > .player > .infoline:focus-visible {
+							outline: solid 1px var(--icon-active-stroke);
+							border-radius: 4px;
+						}
+						.cozy > main > .player > .infoline:hover > .infoline-content,
+						.cozy > main > .player > .infoline:focus-visible > .infoline-content {
+							max-width: none;
+							width: max-content;
+							transform: translateX(var(--infoline-scroll-amount));
+							transition: transform var(--infoline-scroll-duration) linear;
+						}
+							.cozy > main > .player > .infoline > .infoline-content > .title {
+								font-weight: 600;
+								font-size: 1.15rem; /* 18px */
+								line-height: 1.35;
+								text-align: center;
+								color: #ffffff;
+							}
+					.cozy > main > .player > .artist {
+						font-weight: normal;
+						font-size: 0.95rem; /* 15px */
+						line-height: 1.3;
+						text-align: center;
+						max-width: 90%;
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						color: rgba(255, 255, 255, 0.7);
+					}
+
+					.cozy > main > .player > .actions {
+						display: flex;
+						flex-grow: 0;
+						flex-flow: column nowrap;
+						justify-content: center;
+						align-items: center;
+						padding: 0.5rem;
+						gap: 0.625rem; /* 10px */
+					}
+						.cozy > main > .player > .actions > .row {
+							display: flex;
+							flex-flow: row nowrap;
+							align-items: center;
+							justify-content: center;
+
+							gap: 0.625rem; /* 10px */
+						}
+							.cozy > main > .player > .actions > .row > .action {
+								display: flex;
+								cursor: pointer;
+								transition: transform 150ms;
+							}
+							.cozy > main > .player > .actions > .row > .action:not(:disabled):active {
+								transform: scale(0.9);
+							}
+							.cozy > main > .player > .actions > .row > .action:not(:disabled):hover > .icon {
+								fill: var(--icon-hover-fill);
+                                stroke: var(--icon-hover-stroke);
+							}
+							.cozy > main > .player > .actions > .row > .action:disabled {
+								opacity: 0.3;
+								cursor: not-allowed;
+							}
+								.cozy > main > .player > .actions > .row > .action > .icon {
+									width: var(--player-icon-size);
+									height: var(--player-icon-size);
+                                    fill: var(--player-main-icons-fill);
+                                    stroke: var(--player-main-icons-stroke);
+
+									stroke-width: 2.5;
+
+                                    transition: fill 150ms, stroke 150ms;
+								}
+								.cozy > main > .player > .actions > .row > .action.big > .icon {
+									width: var(--player-main-icon-size);
+									height: var(--player-main-icon-size);
+
+                                    fill: var(--player-play-icon-fill);
+                                    stroke: var(--player-play-icon-stroke);
+								}
+								.cozy > main > .player > .actions > .row.small > .action > .icon {
+									width: var(--player-small-icon-size);
+									height: var(--player-small-icon-size);
+
+                                    fill: var(--player-minor-icons-fill);
+									stroke: var(--player-minor-icons-stroke);
+
+									stroke-width: 2;
+
+                                    transition: fill 150ms, stroke 150ms;
+								}
+								.cozy > main > .player > .actions > .row.small > .action:not(.active, :disabled):hover > .icon {
+									stroke: var(--icon-hover-stroke);
+                                    fill: var(--icon-hover-fill);
+									stroke-width: 2.5;
+								}
+								.cozy > main > .player > .actions > .row.small > .action.active > .icon {
+                                    fill: var(--icon-active-fill);
+									stroke: var(--icon-active-stroke);
+								}
+								.cozy > main > .player > .actions > .row.small > .action.download.active > .icon {
+									fill: transparent;
+								}
+				/* #endregion section.player */
+
+
+				.cozy > main > .stations {
+					overflow-y: auto;
+					overflow-x: clip;
+
+					display: flex;
+					flex-flow: column nowrap;
+					align-items: stretch;
+					justify-content: stretch;
+
+				}
+				/* #region section.stations */
+
+					.cozy > main > .stations > ul {
+						width: 100%;
+
+						display: flex;
+						flex-flow: column nowrap;
+						align-items: stretch;
+						justify-content: start;
+
+						padding: 0.625rem 1.25rem; /* 10px 20px */
+						gap: 0.4rem;
+					}
+					.cozy > main > .stations > ul > .station {
+						width: 100%;
+						display: flex;
+						flex-flow: row nowrap;
+						align-items: center;
+						justify-content: start;
+						gap: 0.625rem; /* 10px */
+
+						cursor: pointer;
+
+						border-radius: 5px;
+					}
+					
+					.cozy > main > .stations > ul > .station:nth-child(2n) {
+						background: var(--alternating-row-background);
+					}
+					.cozy > main > .stations > ul > .station:is(:hover, :focus-within, .active)  {
+						background: var(--stations-active-station-background);
+						color: var(--stations-active-station-color);
+					}
+						.cozy > main > .stations > ul > .station > .coverholder {
+							height: 2.3rem;
+							width: 2.3rem;
+							border-radius: 0.3125rem; /* 5px */
+							overflow: clip;
+
+							display: grid;
+							grid-template: 100% / 100%;
+
+							flex-shrink: 0;
+							transform: scale(1.1);
+						}
+						.cozy > main > .stations > ul > .station > .coverholder > .cover,
+						.cozy > main > .stations > ul > .station > .coverholder > .feather-play {
+							height: 2.3rem;
+							width: 2.3rem;
+							grid-area: 1/1;
+                            object-fit: cover;
+                            object-position: center;
+						}
+						.cozy > main > .stations > ul > .station > .coverholder > .feather-play {
+							fill: var(--icon-hover-fill);
+							stroke: var(--icon-hover-stroke);
+
+							background: var(--stations-play-background-color);
+
+							opacity: 0;
+						}
+						.cozy > main > .stations > ul > .station > .title {
+							font-weight: 400;
+							font-size: 1.125rem; /* 18px */
+							flex: 1;
+							min-width: 0;
+
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							text-align: start;
+
+							transition: font-weight 150ms;
+						}
+						.cozy > main > .stations > ul > .station > .delete-station-btn {
+							opacity: 0;
+							transition: opacity 150ms ease, color 150ms ease, transform 150ms ease;
+							cursor: pointer;
+							padding: 0.3rem;
+							border-radius: 4px;
+							color: inherit;
+							flex-shrink: 0;
+							margin-left: auto;
+							margin-right: 0.25rem;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							background: transparent;
+							border: none;
+						}
+						.cozy > main > .stations > ul > .station:is(:hover, :focus-within) > .delete-station-btn {
+							opacity: 0.65;
+						}
+						.cozy > main > .stations > ul > .station > .delete-station-btn:is(:hover, :focus) {
+							opacity: 1;
+							color: #ff4d4d;
+							transform: scale(1.15);
+						}
+
+						.cozy > main > .stations > ul > .station:is(:hover, :focus-within) > .coverholder > .feather-play {
+							opacity: 1;
+						}
+						.cozy > main > .stations > ul > .station.active > .coverholder > .feather-play {
+							fill: var(--icon-active-fill);
+							stroke: var(--icon-active-stroke);
+						}
+						.cozy > main > .stations > ul > .station.active > .title {
+							font-weight: 600;
+						}
+				/* #endregion section.stations */
+
+
+				.cozy > main > .account {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+
+					padding: 2.5rem 1.25rem 1.25rem 1.25rem; /* 40px 20px 20px 20px */
+					gap: 1rem;
+
+				}
+				/* #region section.account */
+
+					.cozy > main > .account > .logoholder {
+						display: flex;
+						flex-flow: row nowrap;
+						align-items: center;
+						justify-content: start;
+
+						gap: 0.6125rem; /* 10px */
+
+						position: relative;
+					}
+						.cozy > main > .account > .logoholder > .logo {
+							width: 4rem; /* 64px */
+							height: 4rem; /* 64px */
+							border-radius: 0.125rem; /* 2px */
+
+							background-color: white;
+						}
+						.cozy > main > .account > .logoholder > .valign {
+							display: flex;
+							flex-flow: column nowrap;
+							align-items: start;
+							justify-content: center;
+							gap: 0.25rem; /* 4px */
+							line-height: 125%;
+
+							cursor: default;
+						}
+							.cozy > main > .account > .logoholder > .valign > .name {
+								font-size: 1.5rem;
+								font-weight: 500;
+							}
+							.cozy > main > .account > .logoholder > .valign > .version {
+								font-size: 1rem;
+								font-weight: 300;
+							}
+					.cozy > main > .account > .links {
+						display: flex;
+						flex-flow: column nowrap;
+						gap: 1rem;
+						min-width: 60%;
+					}
+						.cozy > main > .account > .links > a.iconlink {
+							font-size: 1.1rem;
+							color: inherit;
+							text-decoration: none;
+							font-weight: 300;
+
+							display: flex;
+							flex-flow: row nowrap;
+							align-items: center;
+							gap: 0.2rem;
+						}
+							.cozy > main > .account > .links > a.iconlink > .icon {
+								width: 1.1rem;
+								height: 1.1rem;
+
+								stroke-width: 1;
+								opacity: 0.5;
+
+								transition: stroke-width 150ms, opacity 150ms;
+							}
+							.cozy > main > .account > .links > a.iconlink:is(:hover, :focus-within, :focus) > .icon {
+								opacity: 1;
+								stroke-width: 3;
+							}
+
+					.cozy > main > .account > .real-account {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						padding: 0.625rem 0.9375rem; /* 10px 15px */
+						gap: 0.625rem; /* 10px */
+
+						width: 100%;
+
+						background: rgba(128, 128, 128, 0.15);
+						border-radius: 0.3125rem /* 5px */;
+
+						cursor: pointer;
+					}
+					.cozy > main > .account > .real-account:focus-within {
+						outline: solid 2px #fff;
+					}
+						.cozy > main > .account > .real-account > .avatar {
+							width: 3.125rem; /* 50px */
+							height: 3.125rem; /* 50px */
+							border-radius: 0.3125rem; /* 5px */
+						}
+
+						.cozy > main > .account > .real-account > .valign {
+							display: flex;
+							flex-direction: column;
+							justify-content: space-between;
+							align-items: flex-start;
+							padding: 0.25rem 0; /* 4px 0 */
+							gap: 0.1875rem; /* 3px */
+							align-self: stretch;
+						}
+
+						.cozy > main > .account > .real-account > .valign > .username {
+							font-weight: 500;
+							font-size: 1rem; /* 16px */
+							line-height: 100%;
+						}
+
+						.cozy > main > .account > .real-account > .valign > .logout-button {
+							display: flex;
+							flex-direction: row;
+							align-items: center;
+							padding: 0;
+							gap: 0.4375rem; /* 7px */
+						}
+						.cozy > main > .account > .real-account > .valign > .logout-button > span {
+							font-weight: 300;
+							font-size: 0.9375rem; /* 15px */
+							line-height: 100%;
+						}
+						.cozy > main > .account > .real-account > .valign > .logout-button > .icon {
+							width: 0.875rem; /* 14px */
+							height: 0.875rem; /* 14px */
+						}
+
+				.cozy > main > .account.logged-in > .login {
+					display: none;
+				}
+				.cozy > main > .account.logged-out {
+					justify-content: space-between;
+				}
+				.cozy > main > .account.logged-out > .spacer {
+					display: none;
+				}
+				.cozy > main > .account.logged-out > .links {
+					flex-flow: row wrap;
+					text-align: center;
+					justify-content: center;
+				}
+				.cozy > main > .account.logged-out > .links > .iconlink {
+					font-size: 0.9rem;
+					opacity: 0.8;
+					transition: opacity 150ms;
+					text-decoration: underline;
+					text-decoration-color: currentColor;
+					text-decoration-color: color-mix(in srgb, currentColor, transparent 50%);
+				}
+				.cozy > main > .account.logged-out > .links > a.iconlink:is(:hover, :focus-within, :focus) {
+					opacity: 1;
+				}
+				.cozy > main > .account.logged-out > .links > .iconlink > .icon {
+					display: none;
+				}
+					.cozy > main > .account > .login {
+					display: flex;
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 0.625rem; /* 10px */
+					width: 80%;
+				}
+					.cozy > main > .account > .login > .inputgroup {
+						display: flex;
+						flex-direction: column;
+						align-items: flex-start;
+						padding: 0;
+						gap: 0.25rem; /* 4px */
+						align-self: stretch;
+						flex-grow: 0;
+					}
+						.cozy > main > .account > .login > .inputgroup > label {
+							font-weight: 500;
+							font-size: 0.9375rem; /* 15px */
+							line-height: 100%;
+						}
+
+						.cozy > main > .account > .login > .inputgroup > input {
+							padding: 0.5rem 0.625rem; /* 8px 10px */
+							color: inherit;
+							font-family: inherit;
+							background: rgba(128, 128, 128, 0.15);
+							border: none;
+							border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+							border-radius: 0 0.3125rem /* 5px */ 0 0;
+							font-weight: 400;
+							font-size: 0.9375rem; /* 15px */
+							width: 100%;
+							line-height: 100%;
+
+							/*
+							* With `Inter`, there's a contextual alternate that moves the `@` symbol vertically when
+							* there is no character after.
+							* When typing an email, this causes ugly shifts.
+							* Very minor, but helps keep things consistent.
+							*/
+							font-feature-settings: "calt" 0;
+							transition: background-color 150ms, border-bottom-color 150ms;
+						}
+
+						.cozy > main > .account > .login > .inputgroup > input#login-email::placeholder {
+							color: inherit;
+							opacity: 0.4;
+						}
+
+						.cozy > main > .account > .login > .buttonsgroup {
+							display: flex;
+							flex-direction: row;
+							align-items: flex-start;
+							gap: 1.25rem; /* 20px */
+
+							width: 100%;
+						}
+						.cozy > main > .account > .login > .buttonsgroup > .iconbutton {
+							display: flex;
+							flex-direction: row;
+							justify-content: center;
+							align-items: center;
+							padding: 0.625rem; /* 10px */
+							gap: 0.3125rem; /* 5px */
+							flex-grow: 1;
+
+							--background-color: rgba(128, 128, 128, 0.15);
+							--border-color: rgba(128, 128, 128, 0.15);
+							background: var(--background-color);
+							border: 1px solid var(--border-color);
+							border-radius: 0.3125rem; /* 5px */
+
+							text-decoration: none;
+							font-family: inherit;
+							font-style: normal;
+							font-weight: 300;
+							font-size: 0.875rem; /* 14px */
+							line-height: 100%;
+							color: inherit;
+
+							cursor: pointer;
+
+							transition: background-color 150ms, border-color 150ms, color 150ms;
+						}
+						.cozy > main > .account > .login > .buttonsgroup > .iconbutton > .icon {
+							width: 1rem;
+							height: 1rem;
+							stroke: var(--text-color); /* do not inherit, as currentColor may be transparent */
+						}
+						.cozy > main > .account > .login > .buttonsgroup > .iconbutton.active {
+							background-color: rgb(255 176 74 / 23%);
+							border-color: rgb(255 176 74 / 23%);
+							color: color-mix(in srgb, currentColor, transparent 50%);
+							cursor: default;
+						}
+						.cozy > main > .account > .login > .buttonsgroup > .iconbutton.active > .icon {
+							animation: spin 2s infinite linear;
+						}
+						.cozy > main > .account > .login > .buttonsgroup > .iconbutton.warning {
+							animation: login-was-bad 5s ease;
+						}
+
+						@keyframes login-was-bad {
+							0% {
+								border-color: rgb(255 53 53 / 40%);
+								background-color: rgb(255 53 53 / 40%);
+							}
+							100% {
+								border-color: var(--border-color);
+								background-color: var(--background-color);
+							}
+						}
+
+
+						.cozy > main > .account > .login > .login-error-container {
+							text-align: center;
+							font-weight: 400;
+							width: 100%;
+							font-size: 0.8rem;
+						}
+				/* #endregion section.account */
+
+				.cozy .action.repeat .repeat-badge {
+					font-family: inherit;
+					transition: fill 150ms;
+				}
+				.cozy .action.repeat.active > .icon {
+					fill: var(--icon-active-fill);
+					stroke: var(--icon-active-stroke);
+				}
+				.cozy .action.repeat.active .repeat-badge {
+					fill: var(--icon-active-stroke);
+				}
+
+				.cozy .searchResultsList {
+					width: 100%;
+					display: flex;
+					flex-flow: column nowrap;
+					padding: 0.5rem 1.25rem;
+					gap: 0.25rem;
+				}
+				.cozy .search-header {
+					padding: 0.4rem 0.25rem;
+					font-size: 0.72rem;
+					font-weight: 700;
+					opacity: 0.75;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+				}
+				.cozy .search-item {
+					display: flex;
+					align-items: center;
+					gap: 0.75rem;
+					padding: 0.4rem 0.5rem;
+					border-radius: 6px;
+					border: 1px solid transparent;
+					background: transparent;
+					cursor: pointer;
+					text-align: left;
+					width: 100%;
+					color: inherit;
+					transition: background-color 150ms, border-color 150ms;
+				}
+				.cozy .search-item:hover, .cozy .search-item:focus {
+					background-color: color-mix(in srgb, var(--icon-default-stroke) 12%, transparent);
+					border-color: color-mix(in srgb, var(--icon-default-stroke) 25%, transparent);
+				}
+				.cozy .search-item .icon-holder {
+					width: 2rem;
+					height: 2rem;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					border-radius: 4px;
+					background-color: color-mix(in srgb, var(--icon-default-stroke) 15%, transparent);
+					flex-shrink: 0;
+				}
+				.cozy .search-item .info {
+					display: flex;
+					flex-direction: column;
+					min-width: 0;
+					flex: 1;
+				}
+				.cozy .search-item .info .title {
+					font-size: 0.85rem;
+					font-weight: 600;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.cozy .search-item .info .artist {
+					font-size: 0.75rem;
+					opacity: 0.7;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				.cozy .search-item .search-play-btn {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					padding: 0.35rem;
+					border-radius: 50%;
+					color: var(--icon-default-stroke);
+					opacity: 0.6;
+					transition: opacity 150ms, transform 150ms, color 150ms;
+				}
+				.cozy .search-item:hover .search-play-btn {
+					opacity: 1;
+					color: var(--icon-active-stroke);
+					transform: scale(1.2);
+				}
+
+				/* #region Lyrics Styles */
+				.cozy > main > .player > .coverHolder > .lyricsContainer {
+					grid-area: cover;
+					width: 100%;
+					height: 100%;
+					max-height: 100%;
+					box-sizing: border-box;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: flex-start;
+					padding: 0.75rem 0.5rem;
+					background: rgba(15, 20, 30, 0.85);
+					backdrop-filter: blur(16px);
+					border-radius: var(--player-cover-corner-radius, 15px);
+					overflow: hidden;
+					position: relative;
+					user-select: none;
+					box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.4);
+				}
+				.cozy > main > .player > .coverHolder > .lyricsContainer > .lyricsStatus {
+					margin: auto;
+					font-size: 0.85rem;
+					color: rgba(255, 255, 255, 0.65);
+					text-align: center;
+					padding: 1rem;
+				}
+				.cozy > main > .player > .coverHolder > .lyricsContainer > .lyricsLines {
+					display: flex;
+					flex-direction: column;
+					width: 100%;
+					height: 100%;
+					overflow-y: auto;
+					scroll-behavior: smooth;
+					mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+					-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+				}
+				.cozy > main > .player > .coverHolder > .lyricsContainer > .lyricsLines::-webkit-scrollbar {
+					display: none;
+				}
+				.cozy .lyricLine {
+					padding: 0.4rem 0.5rem;
+					font-size: 0.85rem;
+					line-height: 1.4;
+					color: rgba(255, 255, 255, 0.45);
+					text-align: center;
+					border-radius: 6px;
+					cursor: pointer;
+					transition: color 200ms ease, transform 200ms ease, font-size 200ms ease;
+					flex-shrink: 0;
+				}
+				.cozy .lyricLine:hover {
+					color: rgba(255, 255, 255, 0.85);
+					background: rgba(255, 255, 255, 0.06);
+				}
+				.cozy .lyricLine.active {
+					color: #ffffff;
+					font-weight: 700;
+					font-size: 0.95rem;
+					transform: scale(1.04);
+					text-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+				}
+				.cozy .action.lyrics.active {
+					stroke: var(--icon-active-stroke, #3ea6ff);
+					color: var(--icon-active-stroke, #3ea6ff);
+				}
+				/* #endregion */
+
+/* #region Desktop Player Mode (popout-mode) */
+html.popout-mode,
+html.popout-mode body {
+	background: #0d0f15 !important;
+	color: #e4e7ed;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	user-select: none;
+}
+
+html.popout-mode #anesidora {
+	background: radial-gradient(circle at 50% 12%, rgba(45, 55, 78, 0.4), rgba(13, 15, 21, 0.95) 75%), #0d0f15 !important;
+}
+
+html.popout-mode .cozy > .background-blur {
+	filter: blur(55px) saturate(2.4) brightness(0.6);
+	opacity: 0.55 !important;
+	transform: scale(1.15);
+	transition: opacity 0.4s ease;
+}
+
+/* Desktop Header Navigation */
+html.popout-mode .cozy > .navigation {
+	background: rgba(18, 22, 32, 0.72) !important;
+	backdrop-filter: blur(24px) saturate(1.8);
+	-webkit-backdrop-filter: blur(24px) saturate(1.8);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	padding: 0.65rem 1.2rem;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+html.popout-mode .cozy > .navigation > .navigation-scroll-container > .navigation-scroll-items {
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	font-size: 0.92rem;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+html.popout-mode .cozy > .navigation > .navigation-button {
+	color: rgba(255, 255, 255, 0.75);
+	padding: 6px;
+	border-radius: 8px;
+	transition: background 150ms, color 150ms, transform 150ms;
+}
+html.popout-mode .cozy > .navigation > .navigation-button:hover {
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	transform: scale(1.08);
+}
+
+/* Floating Artwork with 3D Depth */
+html.popout-mode .cozy > main > .player {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	width: 100vw !important;
+	height: 100% !important;
+	max-height: 100vh !important;
+	padding: 1.2rem 1.2rem 1.4rem !important;
+	gap: 0.6rem !important;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+	box-sizing: border-box !important;
+}
+
+html.popout-mode .cozy > main > .player > .spacer {
+	min-height: 0 !important;
+	flex-shrink: 1 !important;
+	flex-grow: 0.3 !important;
+}
+
+html.popout-mode .cozy > main > .player > .coverHolder {
+	flex-shrink: 1 !important;
+	flex-grow: 0 !important;
+	max-height: min(70vh, 70vw, 700px) !important;
+	max-width: min(70vh, 70vw, 700px) !important;
+	width: clamp(200px, min(70vw, 60vh), 700px) !important;
+	height: clamp(200px, min(70vw, 60vh), 700px) !important;
+	aspect-ratio: 1/1 !important;
+	position: relative;
+	transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
+	margin: 0 auto;
+}
+
+/* Expanded Lyrics Mode in Popout */
+html.popout-mode .cozy > main > .player.lyrics-open > .coverHolder {
+	width: clamp(240px, min(85vw, 55vh), 750px) !important;
+	height: clamp(240px, min(85vw, 55vh), 750px) !important;
+	max-width: 800px !important;
+}
+
+/* Hide dock back and popout button in popout window */
+html.popout-mode .action.popout,
+html.popout-mode .action.dock {
+	display: none !important;
+}
+
+
+html.popout-mode .cozy > main > .player > .coverHolder > .cover {
+	height: 100% !important;
+	width: 100% !important;
+	object-fit: cover !important;
+	border-radius: 18px !important;
+	box-shadow: 
+		0 20px 50px rgba(0, 0, 0, 0.65),
+		0 6px 18px rgba(0, 0, 0, 0.4),
+		0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+	transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+}
+
+html.popout-mode .cozy > main > .player > .coverHolder:hover > .cover {
+	transform: translateY(-3px) scale(1.02);
+	box-shadow: 
+		0 26px 65px rgba(0, 0, 0, 0.75),
+		0 10px 26px rgba(0, 0, 0, 0.45),
+		0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Typography & Titles - Clean & Truncated */
+html.popout-mode .cozy > main > .player > .infoline {
+	margin-top: 0.5rem !important;
+	max-width: 92% !important;
+	width: 100% !important;
+	text-align: center !important;
+	display: flex !important;
+	justify-content: center !important;
+	flex-shrink: 0;
+}
+
+html.popout-mode .cozy > main > .player > .infoline .title {
+	font-size: 1.25rem !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.015em;
+	color: #ffffff;
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+html.popout-mode .cozy > main > .player > .artist {
+	font-size: 0.95rem !important;
+	font-weight: 500 !important;
+	color: rgba(255, 255, 255, 0.68) !important;
+	margin-top: 0.15rem !important;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 85%;
+	display: block;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+/* Desktop Seek Bar & Time Display */
+html.popout-mode .seek-wrapper {
+	max-width: 94% !important;
+	padding: 0 0.3rem !important;
+	margin-top: 0.6rem !important;
+	flex-shrink: 0;
+}
+
+html.popout-mode .seek-wrapper > .time-current,
+html.popout-mode .seek-wrapper > .time-total {
+	font-size: 0.74rem !important;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.55);
+	min-width: 34px;
+}
+
+html.popout-mode .seek-wrapper > .seekBar {
+	height: 5px !important;
+	border-radius: 3px;
+	background: rgba(255, 255, 255, 0.12);
+	accent-color: #ff9100;
+	transition: height 150ms ease;
+}
+
+html.popout-mode .seek-wrapper:hover > .seekBar {
+	height: 7px !important;
+}
+
+/* Desktop Play/Pause and Next/Prev Controls */
+html.popout-mode .cozy > main > .player > .actions {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row {
+	gap: 1.6rem !important;
+	margin-top: 0.4rem !important;
+	flex-shrink: 0;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big {
+	width: 52px !important;
+	height: 52px !important;
+	border-radius: 50% !important;
+	background: linear-gradient(135deg, #ff9800 0%, #f4511e 100%) !important;
+	box-shadow: 0 6px 20px rgba(255, 110, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s ease !important;
+	cursor: pointer;
+	border: none;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big:hover {
+	transform: scale(1.08) !important;
+	box-shadow: 0 10px 26px rgba(255, 110, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big:active {
+	transform: scale(0.96) !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big > .icon {
+	fill: #ffffff !important;
+	stroke: #ffffff !important;
+	width: 25px !important;
+	height: 25px !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action:not(.big) {
+	width: 38px !important;
+	height: 38px !important;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row > .action:not(.big):hover {
+	background: rgba(255, 255, 255, 0.18);
+	color: #ffffff;
+	transform: scale(1.08);
+}
+
+/* Secondary Action Capsule - Auto Wrap & Fitting */
+html.popout-mode .cozy > main > .player > .actions > .row.small {
+	background: rgba(255, 255, 255, 0.04) !important;
+	backdrop-filter: blur(18px);
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 20px !important;
+	padding: 0.22rem 0.6rem !important;
+	gap: 0.35rem !important;
+	margin-top: 0.35rem !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+	flex-wrap: wrap !important;
+	justify-content: center !important;
+	max-width: 95% !important;
+	box-sizing: border-box !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row.small > .action {
+	padding: 0.3rem !important;
+	border-radius: 50% !important;
+	flex-shrink: 0 !important;
+	transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row.small > .action > .icon {
+	width: 17px !important;
+	height: 17px !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row.small > .action:hover {
+	background: rgba(255, 255, 255, 0.14) !important;
+	color: #ffffff !important;
+	transform: scale(1.12) !important;
+}
+
+html.popout-mode .cozy > main > .player > .actions > .row.small > .action.active {
+	color: #ff9d00 !important;
+	background: rgba(255, 157, 0, 0.18) !important;
+}
+
+/* Frosted Glass Lyrics Display in Desktop Window */
+html.popout-mode .cozy > main > .player > .coverHolder > .lyricsContainer {
+	background: rgba(13, 16, 24, 0.92) !important;
+	backdrop-filter: blur(30px) saturate(1.9);
+	-webkit-backdrop-filter: blur(30px) saturate(1.9);
+	border-radius: 18px !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7) !important;
+	padding: 0.4rem 0.4rem !important;
+}
+
+html.popout-mode .cozy > main > .player > .coverHolder > .lyricsContainer > .lyricsLines {
+	mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%) !important;
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%) !important;
+	gap: 0.12rem !important;
+}
+
+html.popout-mode .cozy .lyricLine {
+	font-size: 0.88rem !important;
+	padding: 0.32rem 0.6rem !important;
+	line-height: 1.35 !important;
+	color: rgba(255, 255, 255, 0.5) !important;
+	white-space: normal !important;
+	word-break: break-word !important;
+	transition: font-size 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+html.popout-mode .cozy .lyricLine.active {
+	font-size: 1.02rem !important;
+	font-weight: 700 !important;
+	color: #ffffff !important;
+	text-shadow: 0 0 14px rgba(255, 157, 0, 0.7) !important;
+	transform: scale(1.03) !important;
+}
+
+/* Custom Sleek Desktop Scrollbars */
+html.popout-mode ::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+html.popout-mode ::-webkit-scrollbar-track {
+	background: transparent;
+}
+html.popout-mode ::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.18);
+	border-radius: 5px;
+}
+html.popout-mode ::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.35);
+}
+/* #endregion */
+/* #region Responsive: Short Windows */
+@media (max-height: 480px) {
+	html.popout-mode .cozy > main > .player > .coverHolder {
+		width: min(130px, 35vw, 30vh) !important;
+		height: min(130px, 35vw, 30vh) !important;
+	}
+	html.popout-mode .cozy > main > .player > .infoline .title {
+		font-size: 0.95rem !important;
+	}
+	html.popout-mode .cozy > main > .player > .artist {
+		font-size: 0.78rem !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big {
+		width: 44px !important;
+		height: 44px !important;
+	}
+	html.popout-mode .cozy > main > .player > .spacer {
+		display: none !important;
+	}
+}
+
+@media (max-height: 340px) {
+	html.popout-mode .cozy > main > .player > .coverHolder {
+		display: none !important;
+	}
+	html.popout-mode .cozy > main > .player > .artist {
+		display: none !important;
+	}
+}
+/* #endregion */
+
+}

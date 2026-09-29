@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Harmonia Offscreen Audio Player</title>
+    <!-- Network Preconnect & DNS-Prefetch for accelerated audio & API calls -->
+    <link rel="preconnect" href="https://tuner.pandora.com" crossorigin>
+    <link rel="dns-prefetch" href="https://tuner.pandora.com">
+    <link rel="preconnect" href="https://mediaserver-sv5-rt-1.pandora.com" crossorigin>
+    <link rel="dns-prefetch" href="https://mediaserver-sv5-rt-1.pandora.com">
+    <link rel="preconnect" href="https://content-sv5-rt-1.pandora.com" crossorigin>
+    <link rel="dns-prefetch" href="https://content-sv5-rt-1.pandora.com">
+
+    <script src="./js/collect_errors.js" type="text/javascript"></script>
+    <script src="./js/keys.js" type="text/javascript"></script>
+    <script src="./js/crypt.js" type="text/javascript"></script>
+    <script src="./js/config.js" type="text/javascript"></script>
+    <script src="./js/platform_specific.js" type="text/javascript"></script>
+    <script src="./js/common.js" type="text/javascript"></script>
+    <script src="./js/anesidora.js" type="text/javascript"></script>
+    <script src="./js/background.js" type="text/javascript"></script>
+    <script src="./js/offscreen_bridge.js" type="text/javascript"></script>
+</head>
+<body>
+    <audio id="mp3Player"></audio>
+    <audio id="prebufferPlayer" preload="auto" muted style="display:none;"></audio>
+</body>
+</html>
