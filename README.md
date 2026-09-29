@@ -1,158 +1,156 @@
-# Harmonia (Chrome Manifest V3 现代版)
+# Harmonia (Chrome Manifest V3 Edition)
 
 > **Tabs? Where we're listening, we don't need tabs.**
-> 专为 Google Chrome 深度重构的 **Manifest V3** 现代化高颜值 Pandora 广播电台播放器扩展。
+> A modern, elegant, lightweight Pandora internet radio player extension rebuilt from the ground up for **Google Chrome Manifest V3**.
+
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL_v2-blue.svg)](./LICENSE)
+[![Manifest V3](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-brightgreen.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![Release](https://img.shields.io/github/v/release/zhuxiufeng/Harmonia?color=orange)](https://github.com/zhuxiufeng/Harmonia/releases/latest)
 
 ---
 
-## ⚖️ 免责声明 / Disclaimer
+## ⚖️ Disclaimer
 
-- **仅供学习与学术研究**：本项目仅供技术学习、逆向工程互操作性研究与学术交流使用（For educational and research purposes only）。
-- **无官方隶属关系**：本项目为独立开发的第三方 Web 客户端，与 Pandora Media, LLC 无任何关联、赞助或背书关系。
-- **版权归属**：所有商标、服务标志、歌曲与音视频版权均归其各自版权所有者所有。
+- **Educational & Interoperability Research Only**: This project is developed solely for technical study, reverse-engineering interoperability research, and educational purposes.
+- **No Official Affiliation**: Harmonia is an independent third-party Web client and is not affiliated with, endorsed, sponsored, or certified by Pandora Media, LLC or SiriusXM.
+- **Intellectual Property**: All music streams, artist names, album art, trademarks, and service marks belong to their respective copyright holders.
 
 ---
 
-## 🌟 项目亮点与 MV3 架构适配
+## 🌟 Modern MV3 Architecture & Technical Highlights
 
-由于 Chrome 逐步全面弃用 Manifest V2，原版 Anesidora 依赖的后台常驻 DOM（`background.htm`）与 `chrome.extension.getBackgroundPage()` 同步接口在 Chrome MV3 中已无法运行。
+As Google Chrome phases out Manifest V2, legacy extensions relying on persistent background pages (`background.htm`) and synchronous DOM access (`chrome.extension.getBackgroundPage()`) no longer function. 
 
-本项目完整遵循 **Chrome Manifest V3 官方规范**，在保留纯净在线广播体验的前提下，完成了现代化的跨上下文异步解耦与重构：
+**Harmonia** re-architects the entire runtime to fully comply with **Chrome Manifest V3 specifications** while preserving a seamless, low-latency audio experience:
 
-| 特性 / 机制 | 原版 (MV2) | 本项目 (MV3) |
+| Feature / Mechanism | Legacy (MV2) | Harmonia (MV3) |
 | :--- | :--- | :--- |
-| **Manifest 规范** | `manifest_version: 2` (已废弃) | `manifest_version: 3` (现代规范) |
-| **后台宿主** | `background.htm` (常驻页面) | **Service Worker** (`sw.js`) + **Offscreen Document** (`offscreen.html`) |
-| **音频流媒体播放** | Background 中的 `<audio>` 标签 | 利用 Chrome 109+ **`chrome.offscreen`** (`AUDIO_PLAYBACK` 理由) 常驻独立音频沙箱播放 |
-| **跨进程通信** | `chrome.extension.getBackgroundPage()` 同步直接调用 (MV3已彻底移除) | **透明 RPC 桥接层 (`bridge.js` & `offscreen_bridge.js`)**，模拟经典对象接口，无缝兼容上层业务 |
-| **网络请求头伪装** | `webRequest` 阻塞修改 (MV3限制) | 基于 **`declarativeNetRequest`** 规则，无缝将 `tuner.pandora.com` 的 `User-Agent` 伪装为 `libcurl` |
-| **快捷键与操作** | `browserAction` / `_execute_browser_action` | **`action`** / **`_execute_action`** 与 Service Worker 统一路由 |
-| **权限控制** | 宽泛的 URL 匹配权限 | 细粒度 `permissions: ["offscreen", "storage", "declarativeNetRequest", "commands"]` 与声明式 `host_permissions` |
+| **Manifest Spec** | `manifest_version: 2` (Deprecated) | **`manifest_version: 3`** (Active standard) |
+| **Background Host** | Persistent DOM (`background.htm`) | **Service Worker** (`sw.js`) + **Chrome Offscreen Document** (`offscreen.html`) |
+| **Media Playback** | `<audio>` in persistent background DOM | Dedicated sandboxed **`chrome.offscreen`** (`AUDIO_PLAYBACK` reason) |
+| **Cross-Context Comms** | Synchronous `getBackgroundPage()` calls | **Transparent Async RPC Bridge (`bridge.js` & `offscreen_bridge.js`)** providing zero-friction shims |
+| **Request Header Spoofing** | Blocking `webRequest` API (Forbidden in MV3) | Declarative **`declarativeNetRequest`** engine seamlessly setting `User-Agent: libcurl` |
+| **Action & Shortcuts** | `browserAction` API | Unified **`action`** / **`_execute_action`** routed through Service Worker |
+| **Permissions** | Broad wildcard host permissions | Minimalist scoped `permissions` (`offscreen`, `storage`, `declarativeNetRequest`, `commands`) |
 
 ---
 
-## 🚀 功能特性
+## 🚀 Features
 
-1. **Pandora 广播核心完整支持**：
-   - 官方 Blowfish 加密算法解密通讯（ECB 模式）。
-   - 账号登录、记忆登录状态。
-   - 电台列表获取、切换电台、快速混音 (QuickMix)。
-   - 搜索电台并创建新电台、删除电台。
-   - 点赞 (Thumbs Up)、点踩 (Thumbs Down)、休眠歌曲 (Tired of song)、解释推荐理由 (Why is this song playing)。
-2. **现代黑曜石美学与沉浸式 UI**：
-   - **全新发光矢量图标**：黑曜石圆角晶透底座与珊瑚金光环双连音符。
-   - **Cozy 模式**：大卡片设计，包含封面毛玻璃背景、精致导航、历史记录、电台筛选和账号面板。
-   - **Compact 模式**：横条紧凑设计，占用极小视窗，适合边工作边听歌。
-3. **实时歌词同步展示**：
-   - 深度集成 LRCLIB 开放歌词库，自动检索并精准匹配滚动歌词。
-4. **极速音频预连接与预缓冲优化**：
-   - DNS Prefetch & Preconnect 预解析技术，秒级首播起播与丝滑切歌。
-5. **系统级集成**：
-   - **MediaSession API**：在操作系统（Windows / macOS / Linux 媒体控制中心）或 Chrome 全局媒体控制器中展示当前歌名、歌手、高清专辑封面，支持系统按键播控。
-   - **Chrome 快捷键绑定**：
-     - `Ctrl+Space`：呼出播放器弹窗；
-     - 播放/暂停快捷键；
-     - 上一首 / 下一首快捷键。
-6. **高度可定制的 Options 选项页**：
-   - 亮色 / 暗色 / 随系统自动切换的主题预设方案。
-   - 自定义 CSS 变量调色盘与全局自定义样式输入。
-   - 空闲暂停时长调节、播放历史记录上限等。
+1. **Full Pandora Core Capabilities**:
+   - Native Blowfish decryption (ECB mode) for API telemetry.
+   - Account authentication & persistent session management.
+   - Station browsing, switching, QuickMix playback, station search, and station creation/deletion.
+   - Thumbs Up, Thumbs Down, Tired of Song (Sleep track), and "Why is this song playing" explanations.
+2. **Obsidian Aesthetic & Immersive Dual Views**:
+   - **Modern Obsidian Visual Identity**: Crafted with dark frosted glassmorphism and radiant coral-to-amber gold glowing vector glyphs.
+   - **Cozy Mode**: Large interactive card UI featuring dynamic album art backdrop, smooth navigation tabs, track history, and account manager.
+   - **Compact Mode**: Ultra-slim toolbar strip view ideal for side-by-side work and multitasking.
+3. **Synchronized Lyrics Integration**:
+   - Deeply integrated with [LRCLIB](https://lrclib.net/) to automatically query, sync, and smoothly scroll lyrics in real-time.
+4. **Preconnect & Fast Start Optimizations**:
+   - Network DNS-Prefetch and TCP/TLS Preconnect for Pandora CDN endpoints, achieving near-zero latency track buffering and gapless switching.
+5. **System-Level OS Media Integration**:
+   - **MediaSession API**: Shows rich metadata (song title, artist, album art) in Windows / macOS / Linux OS Media Control Centers and Chrome Global Media Controls, with full keyboard hardware media keys support.
+   - **Chrome Global Shortcuts**:
+     - `Ctrl+Space`: Toggle player popup;
+     - Global Play/Pause, Next Track, and Previous Track hotkeys.
+6. **Customizable Options**:
+   - Theme presets: Dark, Light, or follow System Preferences.
+   - Granular CSS palette variables editor with live custom stylesheet injection.
+   - Inactivity auto-pause threshold, rewind durations, and history capacity controls.
 
 ---
 
-## 🛠️ 安装与使用教程（开发者模式）
+## 🛠️ Installation & Setup (Developer Mode)
 
-在 Chrome 中加载本扩展极为简单，无需任何打包工具或复杂构建：
+Loading Harmonia into Google Chrome takes less than 30 seconds with no build tools or package managers required:
 
-1. 打开 Google Chrome 浏览器，在地址栏输入：
+1. Download the latest pre-packaged release zip (**`Harmonia-v3.1.0-chrome.zip`**) from [Releases](https://github.com/zhuxiufeng/Harmonia/releases/latest) and unzip it (or clone this repository directly).
+2. Open Google Chrome and navigate to:
    ```text
    chrome://extensions/
    ```
-2. 在页面右上角开启 **「开发者模式」(Developer mode)** 开关。
-3. 点击左上角的 **「加载已解压的扩展程序」(Load unpacked)** 按钮。
-4. 选择本项目目录：
-   ```text
-   /home/zxf/workspace/code/agy/chrome_extension/anesidora-mv3
-   ```
-   （或使用已生成的 `anesidora_mv3_dist` 目录）。
-5. 安装完成后，在 Chrome 工具栏点击 Anesidora 图标，即可登录 Pandora 账号开始聆听！
+3. Enable the **Developer mode** toggle in the top-right corner.
+4. Click **Load unpacked** in the top-left corner.
+5. Select the `anesidora-mv3` folder (or the unzipped folder).
+6. Click the **Harmonia** icon in your Chrome toolbar, log in with your Pandora credentials, and enjoy!
 
 ---
 
-## 📦 打包发布
+## 📦 Building & Packaging
 
-项目根目录下提供了打包脚本 `package.bash`：
+A build script `package.bash` is included at the project root:
 
 ```bash
-cd anesidora-mv3
+chmod +x package.bash
 ./package.bash
 ```
 
-执行后会在上级目录生成发布文件：
-- `anesidora_mv3_dist/`：纯净的分发目录。
-- `anesidora_mv3.zip`：打包完毕的 Chrome Web Store 上传包。
+The script generates:
+- `../anesidora_mv3_dist/`: Clean deployment directory ready for distribution.
+- `../anesidora_mv3.zip`: Packaged zip archive ready for distribution or offline installation.
 
 ---
 
-## 📂 目录结构说明
+## 📂 Project Architecture
 
 ```text
-anesidora-mv3/
-├── manifest.json            # MV3 清单配置文件
-├── declarativeNetRules.json # DeclarativeNetRequest 动态规则（伪装 User-Agent）
-├── offscreen.html           # MV3 离屏音频宿主页面（拥有 DOM & <audio>）
-├── cozy.htm                 # Cozy 主题播放器弹窗
-├── compact.htm              # Compact 紧凑模式播放器弹窗
-├── options.htm              # 扩展选项与主题配置页面
-├── package.bash             # 打包构建脚本
+Harmonia/
+├── manifest.json            # MV3 extension manifest configuration
+├── declarativeNetRules.json # DeclarativeNetRequest headers rule
+├── offscreen.html           # Offscreen audio playback sandbox with <audio> DOM
+├── cozy.htm                 # Cozy theme popup view
+├── compact.htm              # Compact mini-player popup view
+├── options.htm              # Extension preferences & styling configuration
+├── package.bash             # Automated distribution packaging script
 ├── css/
-│   ├── common.css           # 基础全局样式
-│   ├── cozypopup.css        # Cozy 播放器样式
-│   ├── reworked_oldpopup.css# Compact 紧凑播放器样式
-│   ├── options.css          # 选项设置页面样式
-│   └── *.woff2              # 离线字体资源
-├── images/                  # 扩展图标、徽标与占位封面
+│   ├── common.css           # Global foundational stylesheets
+│   ├── cozypopup.css        # Cozy card player styling
+│   ├── reworked_oldpopup.css# Compact toolbar player styling
+│   ├── options.css          # Preferences page styling
+│   └── *.woff2              # Bundled variable font assets (Inter)
+├── images/                  # Vector squircle icons & placeholder graphics
 └── js/
-    ├── sw.js                # Background Service Worker（生命周期与快捷键调度）
-    ├── offscreen_bridge.js  # 离屏端 RPC 网关与播放状态广播器
-    ├── bridge.js            # 客户端透明桥接（为 Popup/Options 提供兼容对象）
-    ├── anesidora.js         # Pandora API 核心通信层（请求/认证/电台/歌曲）
-    ├── background.js        # 核心播放引擎（播放列表调度、MediaSession）
-    ├── config.js            # 偏好设置、预设色彩与 Proxy 存储驱动
-    ├── common.js            # 公用工具函数、主题加载与样式计算
-    ├── crypt.js             # Blowfish ECB 加密实现
-    ├── keys.js              # 加密密钥表
-    ├── lyrics.js            # LRCLIB 实时歌词检索与解析
-    ├── jscolor.js           # 选项页取色器组件
-    ├── newpopup.js          # 播放器交互与界面渲染逻辑
-    ├── options.js           # 选项设置与主题自定义交互逻辑
-    ├── platform_specific.js # 平台特异性适配（MV3 action API）
-    └── collect_errors.js    # 运行时错误收集与调试
+    ├── sw.js                # Background Service Worker (lifecycle & shortcuts)
+    ├── offscreen_bridge.js  # Offscreen audio RPC gateway & state broadcaster
+    ├── bridge.js            # Transparent client bridge providing zero-friction shims
+    ├── anesidora.js         # Pandora core API communication layer
+    ├── background.js        # Core playback engine & MediaSession controller
+    ├── config.js            # Configuration store & proxy-based sync engine
+    ├── common.js            # Shared utility functions & theme engine
+    ├── crypt.js             # Blowfish ECB cryptographic cipher
+    ├── keys.js              # Cryptographic key schedule tables
+    ├── lyrics.js            # LRCLIB real-time lyrics query & parser
+    ├── jscolor.js           # Lightweight colorpicker component
+    ├── newpopup.js          # Player interaction & DOM render engine
+    ├── options.js           # Settings controller & custom CSS persistence
+    ├── platform_specific.js # Cross-platform chrome.action API compatibility shim
+    └── collect_errors.js    # Runtime diagnostics & error collector
 ```
 
 ---
 
-## 🙏 致谢与参考开源项目 / Acknowledgements
+## 🙏 Acknowledgements & Upstream Projects
 
-本项目在架构重构与开发过程中，参考并继承了以下优秀的开源社区成果，谨在此表示衷心感谢：
+This project was built upon and inspired by the wonderful work of the open-source community:
 
-1. **[Anesidora (MV2 原版)](https://github.com/pvrs12/Anesidora)**：本项目的基础原型，感谢原作者 `pvrs12` 及贡献者在经典 MV2 时代开创的精致 UI 与 Pandora 客户端实现。
-2. **[Pandora JSON API Documentation](https://6xq.net/pandora-apidoc/json/)**：感谢社区整理的非官方 Pandora 逆向协议文档。
-3. **[LRCLIB](https://lrclib.net/)**：提供免费、开放、高质量的歌词数据检索 API。
-
----
-
-## 🤖 AI 辅助开发说明 / AI-Assisted Engineering
-
-本项目在经典开源项目的基础上，全链路借助 **AI 结对编程助手（AI Pair Programming Assistant）** 完成了现代化的工程重构与代码优化：
-- **MV3 跨上下文异步重构**：由 AI 辅助设计并实现了从 MV2 后台常驻 DOM 到 Chrome MV3（Service Worker + Offscreen Document）的透明 RPC 桥接通信体系；
-- **全屏响应式布局与现代黑曜石 UI**：由 AI 辅助完成全屏专辑画卷自适应排版、霓虹珊瑚金发光矢量视觉资产生成与交互打磨；
-- **实时歌词与流媒体预连接加速**：引入 LRCLIB 同步滚动歌词引擎，并通过 DNS-Prefetch 与 Preconnect 实现了毫秒级首播起播优化；
-- **代码净化与合规治理**：借助 AI 自动审查并剔除了潜在合规争议的下载逻辑及 330KB+ 冗余第三方依赖。
+1. **[Anesidora (Legacy MV2)](https://github.com/pvrs12/Anesidora)**: The foundational prototype. Sincere thanks to original author `pvrs12` and contributors for crafting the delightful UI and Pandora client during the MV2 era.
+2. **[Pandora JSON API Documentation](https://6xq.net/pandora-apidoc/json/)**: Thanks to the community for documenting the unofficial Pandora API specs.
+3. **[LRCLIB](https://lrclib.net/)**: Providing free, open, and high-quality synchronized lyrics lookup API.
 
 ---
 
-## 📄 开源许可证 / License
+## 🤖 AI-Assisted Engineering
 
-本项目遵循 [GNU General Public License v2.0 (GPL-2.0)](./LICENSE) 协议开源。
+This project was modernized and optimized through full-lifecycle **AI Pair Programming**:
+- **MV3 Asynchronous Refactoring**: AI-assisted architecture design transforming legacy persistent DOM backgrounds into a robust Chrome MV3 (Service Worker + Offscreen Audio Sandbox) transparent RPC bridge;
+- **Obsidian Dark Aesthetic & Dynamic Layouts**: AI-assisted visual design for adaptive full-screen artwork viewports and radiant glowing vector icon assets;
+- **Real-Time Lyrics & Network Acceleration**: Implemented LRCLIB rolling lyrics synchronization and DNS-Prefetch / Preconnect optimizations for sub-second startup latency;
+- **Code Cleanliness & Governance**: AI-assisted auditing and removal of legally ambiguous ripping routines and 330KB+ of obsolete third-party dependencies.
 
+---
+
+## 📄 License
+
+This project is licensed under the [GNU General Public License v2.0 (GPL-2.0)](./LICENSE).
