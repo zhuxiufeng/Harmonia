@@ -142,6 +142,16 @@ anesidora-mv3/
 
 ---
 
+## 🤖 AI 辅助开发说明 / AI-Assisted Engineering
+
+本项目在经典开源项目的基础上，全链路借助 **AI 结对编程助手（AI Pair Programming Assistant）** 完成了现代化的工程重构与代码优化：
+- **MV3 跨上下文异步重构**：由 AI 辅助设计并实现了从 MV2 后台常驻 DOM 到 Chrome MV3（Service Worker + Offscreen Document）的透明 RPC 桥接通信体系；
+- **全屏响应式布局与现代黑曜石 UI**：由 AI 辅助完成全屏专辑画卷自适应排版、霓虹珊瑚金发光矢量视觉资产生成与交互打磨；
+- **实时歌词与流媒体预连接加速**：引入 LRCLIB 同步滚动歌词引擎，并通过 DNS-Prefetch 与 Preconnect 实现了毫秒级首播起播优化；
+- **代码净化与合规治理**：借助 AI 自动审查并剔除了潜在合规争议的下载逻辑及 330KB+ 冗余第三方依赖。
+
+---
+
 ## 📄 开源许可证 / License
 
 本项目遵循 [GNU General Public License v2.0 (GPL-2.0)](./LICENSE) 协议开源。
