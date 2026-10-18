@@ -118,11 +118,6 @@
 		font-size: var(--font-size);
 	}
 
-	:root {
-		--viewport-width: 380px;
-		--viewport-height: 640px;
-	}
-
 	html.cozy, .cozy body {
 		background-color: #333;
 	}
@@ -130,20 +125,22 @@
 		background-color: #333;
 	}
 
-	html.cozy, .cozy body,
+	html.cozy, html.cozy body,
 	#anesidora.cozy {
-		width: var(--viewport-width, 380px);
-		height: var(--viewport-height, 640px);
-		min-width: 380px;
-		min-height: 640px;
+		width: var(--viewport-width, 325px);
+		height: var(--viewport-height, 450px);
+		max-width: 325px;
+		max-height: 450px;
+		overflow: hidden;
 	}
 
-	html.compact, .compact body,
+	html.compact, html.compact body,
 	#anesidora.compact {
-		width: var(--viewport-width, 480px);
-		height: var(--viewport-height, 180px);
-		min-width: 480px;
-		min-height: 180px;
+		width: var(--viewport-width, 450px);
+		height: var(--viewport-height, 100px);
+		max-width: 450px;
+		max-height: 100px;
+		overflow: hidden;
 	}
 
 	html.popout-mode,
@@ -157,6 +154,7 @@
 		min-height: 0 !important;
 		max-width: 100vw !important;
 		max-height: 100vh !important;
+		overflow: hidden !important;
 	}
 
 	.seek-wrapper {

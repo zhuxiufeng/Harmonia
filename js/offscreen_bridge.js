@@ -269,6 +269,26 @@ async function handleAction(action, args = {}) {
   }
 }
 
+// Keep-Alive connection between Offscreen Document and Service Worker
+function connectKeepAlive() {
+  try {
+    const port = chrome.runtime.connect({ name: 'keep-alive-port' });
+    port.onMessage.addListener(() => {});
+    port.onDisconnect.addListener(() => {
+      setTimeout(connectKeepAlive, 1000);
+    });
+    // Send periodic ping every 20 seconds to reset inactivity timer
+    setInterval(() => {
+      try {
+        port.postMessage({ type: 'PING' });
+      } catch (e) {}
+    }, 20000);
+  } catch (e) {
+    setTimeout(connectKeepAlive, 2000);
+  }
+}
+connectKeepAlive();
+
 // Broadcast ready announcement so any open popup can immediately sync
 setTimeout(() => {
   window.broadcastStateUpdate('UPDATE_PLAYER');

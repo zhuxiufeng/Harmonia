@@ -467,9 +467,14 @@ document.addEventListener('DOMContentLoaded', function () {
     setup_mediasession();
 });
 
+let lastUsedPopup = 'cozy.htm';
 function updatePopupUrl() {
     browserThemeIsLight = prefersLightMedia.matches;
-    let usedPopup = getEffectivePreset().playerType + '.htm';
+    let usedPopup = (getEffectivePreset()?.playerType || 'cozy') + '.htm';
+    if (usedPopup === lastUsedPopup) {
+        return;
+    }
+    lastUsedPopup = usedPopup;
     const action = get_action();
     if (action?.setPopup) {
         action.setPopup({

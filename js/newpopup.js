@@ -38,7 +38,15 @@ const fuzzyStringSearch = (haystack, needle) => {
     return Math.max(0, matches/lowerHaystack.length);
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+function runWhenReady(fn) {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        fn();
+    } else {
+        document.addEventListener('DOMContentLoaded', fn);
+    }
+}
+
+runWhenReady(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isPopout = urlParams.get('popout') === 'true' || window.location.search.includes('popout');
 
@@ -47,6 +55,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('popout-window');
         document.documentElement.style.setProperty('--viewport-width', `${window.innerWidth}px`);
         document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+
+        const nav = document.querySelector('.navigation');
+        if (nav && !nav.querySelector('.popout-window-controls')) {
+            const controls = document.createElement('div');
+            controls.className = 'popout-window-controls';
+            controls.innerHTML = `
+                <button class="popout-ctrl-btn btn-mini" title="Mini Mode (Compact / Standard)">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="11" height="11" rx="1" ry="1"></rect>
+                    </svg>
+                </button>
+                <button class="popout-ctrl-btn btn-maximize" title="Maximize / Restore">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                    </svg>
+                </button>
+            `;
+            nav.appendChild(controls);
+        }
 
         const updateMiniState = () => {
             if (window.innerHeight <= 380) {
@@ -107,10 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (e) {}
             }, 500);
         });
-    } else if (Math.abs(document.documentElement.clientWidth - document.body.clientWidth) > 10) {
-        // We're in a mobile context, or otherwise on a separate page
-        document.documentElement.style.setProperty('--viewport-width', '100vw');
-        document.documentElement.style.setProperty('--viewport-height', '100vh');
     }
 
     const initializeNavigation = () => {
@@ -1358,26 +1385,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initStations();
-
-    if (background.currentUserInfo?.logged_in) {
-        updateStations();
-        setTimeout(() => {
-            background?.throttleRefreshStationsList?.()?.then?.(() => {
-                if (stationsScreen && !stationsScreen.contains(document.activeElement)) {
-                    updateStations();
-                }
-            });
-        }, 120);
-    }
-
-    initAccount();
-    updateHistory();
-
     initPlayer();
     updatePlayer();
+    initAccount();
 
-    
     background.setCallbacks(
         () => {
             updatePlayer();
@@ -1386,6 +1397,22 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         drawPlayer
     );
+
+    // Render active screen immediately, defer non-visible tabs to next animation frame
+    requestAnimationFrame(() => {
+        initStations();
+        if (background.currentUserInfo?.logged_in) {
+            updateStations();
+            setTimeout(() => {
+                background?.throttleRefreshStationsList?.()?.then?.(() => {
+                    if (stationsScreen && !stationsScreen.contains(document.activeElement)) {
+                        updateStations();
+                    }
+                });
+            }, 300);
+        }
+        updateHistory();
+    });
 
     if (typeof background.onReady === 'function') {
         background.onReady(() => {
@@ -1396,7 +1423,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (showAccountFn) {
                     showAccountFn();
                 }
-                updateStations();
                 if (!background.currentStationToken && (!background.currentSong || !background.currentSong.songName) && bg_config.currentScreen === 'account') {
                     goToScreen('stations');
                 }
@@ -1407,7 +1433,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 goToScreen('account');
             }
             updatePlayer();
-            updateHistory();
         });
     }
 

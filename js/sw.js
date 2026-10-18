@@ -97,6 +97,22 @@ chrome.commands.onCommand.addListener(async (command) => {
     type: 'COMMAND',
     command: command
   }).catch(() => {});
+// Long-lived keep-alive port from offscreen document to prevent service worker hibernation
+const activeKeepAlivePorts = new Set();
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === 'keep-alive-port') {
+    activeKeepAlivePorts.add(port);
+    port.onDisconnect.addListener(() => {
+      activeKeepAlivePorts.delete(port);
+    });
+    port.onMessage.addListener((msg) => {
+      if (msg?.type === 'PING') {
+        try {
+          port.postMessage({ type: 'PONG' });
+        } catch (e) {}
+      }
+    });
+  }
 });
 
 let lastStateSnapshot = null;
