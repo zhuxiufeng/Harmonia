@@ -14,16 +14,6 @@
     <script src="./js/lyrics.js" type="text/javascript"></script>
     <script src="./js/newpopup.js" type="text/javascript"></script>
 
-    <!-- Network Preconnect & DNS-Prefetch for accelerated media/API latency -->
-    <link rel="preconnect" href="https://tuner.pandora.com" crossorigin>
-    <link rel="dns-prefetch" href="https://tuner.pandora.com">
-    <link rel="preconnect" href="https://mediaserver-sv5-rt-1.pandora.com" crossorigin>
-    <link rel="dns-prefetch" href="https://mediaserver-sv5-rt-1.pandora.com">
-    <link rel="preconnect" href="https://content-sv5-rt-1.pandora.com" crossorigin>
-    <link rel="dns-prefetch" href="https://content-sv5-rt-1.pandora.com">
-    <link rel="preconnect" href="https://lrclib.net" crossorigin>
-    <link rel="dns-prefetch" href="https://lrclib.net">
-
     <link href="./css/common.css" rel="stylesheet" type="text/css" />
     <link href="./css/cozypopup.css" rel="stylesheet" type="text/css" />
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, interactive-widget=overlays-content" />
@@ -85,6 +75,22 @@
                     <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
             </button>
+            <div class="popout-window-controls">
+                <button class="popout-ctrl-btn btn-mini" title="Mini Mode (Compact / Standard)">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="11" height="11" rx="1" ry="1"></rect>
+                    </svg>
+                </button>
+                <button class="popout-ctrl-btn btn-maximize" title="Maximize / Restore">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                    </svg>
+                </button>
+            </div>
         </nav>
         <main>
             <!-- The ids need to be classes so that the id can be set/unset for skiplink -->

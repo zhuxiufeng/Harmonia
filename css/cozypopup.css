@@ -1228,8 +1228,8 @@ html.popout-mode .cozy > main > .player > .coverHolder {
 	flex-grow: 0 !important;
 	max-height: min(70vh, 70vw, 700px) !important;
 	max-width: min(70vh, 70vw, 700px) !important;
-	width: clamp(200px, min(70vw, 60vh), 700px) !important;
-	height: clamp(200px, min(70vw, 60vh), 700px) !important;
+	width: clamp(100px, min(70vw, 60vh), 700px) !important;
+	height: clamp(100px, min(70vw, 60vh), 700px) !important;
 	aspect-ratio: 1/1 !important;
 	position: relative;
 	transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease;
@@ -1490,11 +1490,44 @@ html.popout-mode ::-webkit-scrollbar-thumb:hover {
 	background: rgba(255, 255, 255, 0.35);
 }
 /* #endregion */
-/* #region Responsive: Short Windows */
-@media (max-height: 480px) {
+
+/* Popout Window Controls in Nav */
+.popout-window-controls {
+	display: none;
+}
+html.popout-mode .popout-window-controls {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-left: 6px;
+}
+.popout-ctrl-btn {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: rgba(255, 255, 255, 0.65);
+	padding: 4px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+.popout-ctrl-btn:hover {
+	color: #fff;
+	background: rgba(255, 255, 255, 0.15);
+	transform: scale(1.08);
+}
+.popout-ctrl-btn .icon {
+	width: 15px;
+	height: 15px;
+}
+
+/* #region Responsive: Short Windows and Mini Player Mode */
+@media (max-height: 480px) and (min-height: 381px) {
 	html.popout-mode .cozy > main > .player > .coverHolder {
-		width: min(130px, 35vw, 30vh) !important;
-		height: min(130px, 35vw, 30vh) !important;
+		width: min(150px, 35vw, 32vh) !important;
+		height: min(150px, 35vw, 32vh) !important;
 	}
 	html.popout-mode .cozy > main > .player > .infoline .title {
 		font-size: 0.95rem !important;
@@ -1511,11 +1544,114 @@ html.popout-mode ::-webkit-scrollbar-thumb:hover {
 	}
 }
 
-@media (max-height: 340px) {
-	html.popout-mode .cozy > main > .player > .coverHolder {
+@media (max-height: 380px), (max-width: 330px) {
+	html.popout-mode {
+		overflow: hidden !important;
+	}
+	html.popout-mode .cozy > nav.navigation {
+		height: 28px !important;
+		min-height: 28px !important;
+		padding: 2px 8px !important;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+	}
+	html.popout-mode .cozy > nav.navigation .navigation-scroll-items span {
+		font-size: 0.78rem !important;
+	}
+	html.popout-mode .cozy > nav.navigation .navigation-button {
+		width: 22px !important;
+		height: 22px !important;
+	}
+	html.popout-mode .cozy > main {
+		height: calc(100vh - 28px) !important;
+	}
+	html.popout-mode .cozy > main > .player {
+		display: grid !important;
+		grid-template-columns: auto 1fr !important;
+		grid-template-rows: auto auto auto auto !important;
+		grid-template-areas:
+			"cover info"
+			"cover artist"
+			"cover seek"
+			"cover actions" !important;
+		column-gap: 12px !important;
+		row-gap: 2px !important;
+		align-items: center !important;
+		padding: 6px 12px 8px !important;
+		overflow: hidden !important;
+		width: 100% !important;
+		height: 100% !important;
+		box-sizing: border-box !important;
+	}
+	html.popout-mode .cozy > main > .player > .spacer {
 		display: none !important;
 	}
+	html.popout-mode .cozy > main > .player > .coverHolder {
+		grid-area: cover !important;
+		width: clamp(70px, 26vw, 110px) !important;
+		height: clamp(70px, 26vw, 110px) !important;
+		min-width: 60px !important;
+		min-height: 60px !important;
+		max-width: 120px !important;
+		max-height: 120px !important;
+		margin: 0 !important;
+		flex-shrink: 0 !important;
+		border-radius: 8px !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+	}
+	html.popout-mode .cozy > main > .player > .coverHolder .volumewrap {
+		display: none !important;
+	}
+	html.popout-mode .cozy > main > .player > .infoline {
+		grid-area: info !important;
+		margin: 0 !important;
+		text-align: left !important;
+		justify-content: flex-start !important;
+		font-size: 0.92rem !important;
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+	}
 	html.popout-mode .cozy > main > .player > .artist {
+		grid-area: artist !important;
+		margin: 0 !important;
+		text-align: left !important;
+		font-size: 0.78rem !important;
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		opacity: 0.75 !important;
+	}
+	html.popout-mode .cozy > main > .player > .seek-wrapper {
+		grid-area: seek !important;
+		margin: 0 !important;
+		gap: 6px !important;
+	}
+	html.popout-mode .cozy > main > .player > .seek-wrapper > .time-current,
+	html.popout-mode .cozy > main > .player > .seek-wrapper > .time-total {
+		font-size: 0.68rem !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions {
+		grid-area: actions !important;
+		margin: 0 !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: flex-start !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions > .row {
+		gap: 8px !important;
+		margin: 0 !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big {
+		width: 32px !important;
+		height: 32px !important;
+		min-width: 32px !important;
+		min-height: 32px !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions > .row > .action.play.big .icon {
+		width: 20px !important;
+		height: 20px !important;
+	}
+	html.popout-mode .cozy > main > .player > .actions > .row.small {
 		display: none !important;
 	}
 }

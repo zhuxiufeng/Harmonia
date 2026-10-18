@@ -48,19 +48,62 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('popout-window');
         document.documentElement.style.setProperty('--viewport-width', `${window.innerWidth}px`);
         document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+
+        const updateMiniState = () => {
+            if (window.innerHeight <= 380) {
+                document.documentElement.classList.add('mini-player-active');
+            } else {
+                document.documentElement.classList.remove('mini-player-active');
+            }
+        };
+        updateMiniState();
+
+        const btnMini = document.querySelector('.popout-ctrl-btn.btn-mini');
+        const btnMaximize = document.querySelector('.popout-ctrl-btn.btn-maximize');
+
+        if (btnMini) {
+            btnMini.addEventListener('click', () => {
+                const isMini = window.innerHeight <= 280;
+                if (isMini) {
+                    chrome.runtime.sendMessage({
+                        type: 'RESIZE_POPOUT',
+                        width: 380,
+                        height: 640
+                    });
+                } else {
+                    chrome.runtime.sendMessage({
+                        type: 'RESIZE_POPOUT',
+                        width: 360,
+                        height: 170
+                    });
+                }
+            });
+        }
+
+        if (btnMaximize) {
+            btnMaximize.addEventListener('click', () => {
+                chrome.runtime.sendMessage({ type: 'TOGGLE_MAXIMIZE_POPOUT' });
+            });
+        }
+
         let popoutResizeDebounce = null;
         window.addEventListener('resize', () => {
             document.documentElement.style.setProperty('--viewport-width', `${window.innerWidth}px`);
             document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+            updateMiniState();
             if (typeof recalculateInfoLine === 'function') {
                 recalculateInfoLine();
             }
             clearTimeout(popoutResizeDebounce);
             popoutResizeDebounce = setTimeout(() => {
                 try {
-                    if (window.outerWidth >= 280 && window.outerHeight >= 200) {
-                        localStorage.setItem('popout_custom_width', String(window.outerWidth));
-                        localStorage.setItem('popout_custom_height', String(window.outerHeight));
+                    const isNearScreenSize = (
+                        window.outerWidth >= (window.screen.availWidth - 50) &&
+                        window.outerHeight >= (window.screen.availHeight - 50)
+                    );
+                    if (!isNearScreenSize && window.outerWidth >= 280 && window.outerHeight >= 140) {
+                        localStorage.setItem('popout_custom_width', String(Math.min(1000, window.outerWidth)));
+                        localStorage.setItem('popout_custom_height', String(Math.min(800, window.outerHeight)));
                     }
                 } catch (e) {}
             }, 500);
@@ -554,8 +597,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const defaultW = isCompact ? 480 : 380;
                 const defaultH = isCompact ? 180 : 640;
-                const savedW = parseInt(localStorage.getItem('popout_custom_width')) || defaultW;
-                const savedH = parseInt(localStorage.getItem('popout_custom_height')) || defaultH;
+                const rawW = parseInt(localStorage.getItem('popout_custom_width')) || defaultW;
+                const rawH = parseInt(localStorage.getItem('popout_custom_height')) || defaultH;
+                const savedW = Math.min(1000, Math.max(320, rawW));
+                const savedH = Math.min(800, Math.max(160, rawH));
 
                 chrome.runtime.sendMessage({
                     type: 'OPEN_POPOUT',

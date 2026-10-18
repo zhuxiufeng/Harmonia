@@ -126,6 +126,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'RESIZE_POPOUT') {
+    const winId = sender.tab?.windowId || popoutWindowId;
+    if (winId) {
+      chrome.windows.update(winId, {
+        state: 'normal',
+        width: Math.min(1200, Math.max(300, parseInt(message.width) || 360)),
+        height: Math.min(900, Math.max(140, parseInt(message.height) || 180))
+      }).then(() => sendResponse({ ok: true }))
+        .catch(err => sendResponse({ ok: false, error: err?.message }));
+      return true;
+    }
+  }
+
+  if (message.type === 'TOGGLE_MAXIMIZE_POPOUT') {
+    const winId = sender.tab?.windowId || popoutWindowId;
+    if (winId) {
+      chrome.windows.get(winId, (win) => {
+        if (!win) {
+          sendResponse({ ok: false, error: 'Window not found' });
+          return;
+        }
+        if (win.state === 'maximized') {
+          chrome.windows.update(winId, { state: 'normal', width: 380, height: 640 })
+            .then(() => sendResponse({ ok: true, state: 'normal' }))
+            .catch(err => sendResponse({ ok: false, error: err?.message }));
+        } else {
+          chrome.windows.update(winId, { state: 'maximized' })
+            .then(() => sendResponse({ ok: true, state: 'maximized' }))
+            .catch(err => sendResponse({ ok: false, error: err?.message }));
+        }
+      });
+      return true;
+    }
+  }
+
   if (message.type === 'DOCK_POPOUT') {
     if (chrome.action?.openPopup) {
       chrome.action.openPopup().catch(() => {});
@@ -158,11 +193,13 @@ async function openPopoutWindow({ page = 'cozy.htm', width = 380, height = 640 }
   }
 
   const url = chrome.runtime.getURL(`${page}?popout=true`);
+  const targetW = Math.min(1000, Math.max(320, parseInt(width) || 380));
+  const targetH = Math.min(800, Math.max(160, parseInt(height) || 640));
   const win = await chrome.windows.create({
     url,
     type: 'popup',
-    width: Math.max(320, parseInt(width) || 380),
-    height: Math.max(160, parseInt(height) || 640),
+    width: targetW,
+    height: targetH,
     focused: true
   });
   popoutWindowId = win.id;

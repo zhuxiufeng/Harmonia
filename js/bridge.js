@@ -126,6 +126,15 @@
   const savedUsername = (typeof localStorage !== 'undefined' ? localStorage.getItem('username') : null);
   const initialLoggedIn = Boolean(savedUsername);
 
+  // Instant synchronous state hydration from cached snapshot
+  let cachedSnapshot = null;
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('harmonia_last_snapshot') : null;
+    if (raw) {
+      cachedSnapshot = JSON.parse(raw);
+    }
+  } catch (e) {}
+
   const backgroundShim = {
     currentSong: null,
     prevSongs: [],
@@ -286,6 +295,33 @@
       mp3PlayerShim._duration = state.playerState.duration || 0;
       mp3PlayerShim._volume = (state.playerState.volume !== undefined) ? state.playerState.volume : 1;
     }
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const snapshot = {
+          currentSong: backgroundShim.currentSong,
+          prevSongs: (backgroundShim.prevSongs || []).slice(-10),
+          currentStationToken: backgroundShim.currentStationToken,
+          stationsArray: backgroundShim.stationsArray || [],
+          stationsByToken: backgroundShim.stationsByToken || {},
+          currentUserInfo: backgroundShim.currentUserInfo,
+          playerState: {
+            paused: mp3PlayerShim.paused,
+            currentTime: mp3PlayerShim.currentTime,
+            duration: mp3PlayerShim.duration,
+            volume: mp3PlayerShim.volume
+          }
+        };
+        localStorage.setItem('harmonia_last_snapshot', JSON.stringify(snapshot));
+      }
+    } catch (e) {}
+  }
+
+  if (cachedSnapshot) {
+    applyStateSnapshot(cachedSnapshot);
+    isStateReady = true;
+  } else if (savedUsername) {
+    isStateReady = true;
   }
 
   let lastAppliedSongKey = null;
@@ -341,12 +377,14 @@
   });
 
   // Fetch state snapshot with resilient retry loop
-  async function fetchStateWithRetry(retries = 15, delay = 80) {
+  async function fetchStateWithRetry(retries = 8, delay = 60) {
     for (let i = 0; i < retries; i++) {
       try {
         const res = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
         if (res && res.ok && res.state) {
           applyStateSnapshot(res.state);
+          triggerUpdateCallbacks();
+          triggerDrawCallbacks();
           return true;
         }
       } catch (e) {}
@@ -357,18 +395,28 @@
 
   async function init() {
     try {
-      await chrome.runtime.sendMessage({ type: 'ENSURE_OFFSCREEN' });
-      await fetchStateWithRetry();
+      chrome.runtime.sendMessage({ type: 'ENSURE_OFFSCREEN' }).catch(() => {});
+      const res = await chrome.runtime.sendMessage({ type: 'GET_STATE' }).catch(() => null);
+      if (res && res.ok && res.state) {
+        applyStateSnapshot(res.state);
+        triggerUpdateCallbacks();
+        triggerDrawCallbacks();
+      } else {
+        await fetchStateWithRetry(6, 60);
+      }
     } catch (e) {
       console.warn('[Bridge] Init warning:', e);
     } finally {
       isStateReady = true;
-      pendingInitResolvers.forEach((r) => {
-        try {
-          r();
-        } catch (err) {}
-      });
-      pendingInitResolvers = [];
+      if (pendingInitResolvers.length > 0) {
+        const resolvers = pendingInitResolvers;
+        pendingInitResolvers = [];
+        resolvers.forEach((r) => {
+          try {
+            r();
+          } catch (err) {}
+        });
+      }
     }
   }
 
