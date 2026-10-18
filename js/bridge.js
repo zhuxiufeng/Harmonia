@@ -423,5 +423,9 @@
   window.background = backgroundShim;
   window.bg_config = backgroundShim.config;
 
-  init();
+  if (document.readyState === 'complete') {
+    setTimeout(init, 30);
+  } else {
+    window.addEventListener('load', () => setTimeout(init, 30));
+  }
 })();

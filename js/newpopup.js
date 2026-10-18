@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (coverElement) {
-                coverElement.src = getOptimalArtworkUrl(item);
+                setSafeAsyncImage(coverElement, getOptimalArtworkUrl(item));
             }
 
             if (item.songRating === 1) {
@@ -790,13 +790,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const optimalArt = getOptimalArtworkUrl(currentTrack);
 
         if (coverElement) {
-            coverElement.setAttribute('data-art-src', optimalArt);
-            coverElement.src = optimalArt;
-            coverElement.onerror = () => { coverElement.src = DEFAULT_ALBUM_IMAGE; };
+            setSafeAsyncImage(coverElement, optimalArt);
         }
         if (backgroundImageElement) {
-            backgroundImageElement.classList.remove('loaded');
-            backgroundImageElement.src = optimalArt;
+            setSafeAsyncImage(backgroundImageElement, optimalArt);
         }
 
         let titleElement = playerScreen.querySelector('.title');
@@ -968,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let coverElement = newStation.querySelector('.cover');
 
             if (coverElement) {
-                coverElement.src = getOptimalArtworkUrl(station);
+                setSafeAsyncImage(coverElement, getOptimalArtworkUrl(station));
             }
 
             if (station.stationToken === background?.currentStationToken) {

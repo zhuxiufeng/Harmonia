@@ -52,6 +52,41 @@ const getOptimalArtworkUrl = (track) => {
     return url;
 };
 
+const setSafeAsyncImage = (imgElem, url, fallback = DEFAULT_ALBUM_IMAGE) => {
+    if (!imgElem) return;
+    if (!url || url === fallback) {
+        imgElem.src = fallback;
+        imgElem.dataset.loadedSrc = fallback;
+        return;
+    }
+    if (imgElem.dataset.loadedSrc === url) {
+        return;
+    }
+    imgElem.dataset.loadedSrc = url;
+
+    // Ensure DOM image always has a valid local placeholder so document load is instantaneous
+    if (!imgElem.getAttribute('src') || imgElem.getAttribute('src') === '') {
+        imgElem.src = fallback;
+    }
+
+    // Preload image off-DOM so it never blocks window.onload or Chromium popup display
+    const loader = new Image();
+    loader.onload = () => {
+        if (imgElem.dataset.loadedSrc === url) {
+            imgElem.src = url;
+            if (imgElem.classList.contains('background-blur')) {
+                imgElem.classList.add('loaded');
+            }
+        }
+    };
+    loader.onerror = () => {
+        if (imgElem.dataset.loadedSrc === url) {
+            imgElem.src = fallback;
+        }
+    };
+    loader.src = url;
+};
+
 const debounceFunction = (cb, delay = 2000) => {
 	let lastTimeoutId = null;
     return () => {
