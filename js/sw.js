@@ -28,8 +28,8 @@ export async function ensureOffscreen() {
   }
   creatingOffscreenPromise = chrome.offscreen.createDocument({
     url: chrome.runtime.getURL('offscreen.html'),
-    reasons: ['AUDIO_PLAYBACK', 'LOCAL_STORAGE'],
-    justification: 'Pandora radio music playback and cached state storage'
+    reasons: ['AUDIO_PLAYBACK', 'BLOBS'],
+    justification: 'Pandora radio music playback and cached artwork blobs'
   }).catch((err) => {
     if (!err.message?.includes('Only a single offscreen document')) {
       console.error('Failed to create offscreen document:', err);
@@ -131,15 +131,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       currentUserInfo: message.currentUserInfo,
       playerState: message.playerState,
     };
-  }
-
-  if (message.type === 'GET_STATE') {
-    if (lastStateSnapshot) {
-      sendResponse({ ok: true, state: lastStateSnapshot });
-      return;
-    }
-  }
-
   if (message.type === 'ENSURE_OFFSCREEN') {
     ensureOffscreen().then(() => sendResponse({ ok: true }));
     return true;

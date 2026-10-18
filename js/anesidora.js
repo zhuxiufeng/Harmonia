@@ -980,7 +980,11 @@ async function tryExistingLogin() {
     }
 
     await userLogin();
-    refreshStationsList();
+    await refreshStationsList();
+    if (typeof window.broadcastStateUpdate === 'function') {
+        window.broadcastStateUpdate('UPDATE_PLAYER');
+        window.broadcastStateUpdate('UPDATE_STATIONS');
+    }
 }
 
 tryExistingLogin();

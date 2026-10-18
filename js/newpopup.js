@@ -652,7 +652,9 @@ runWhenReady(() => {
         })
         
         playPauseButton?.addEventListener('click', async () => {
-            if (!background.currentUserInfo?.logged_in) {
+            const hasSavedAccount = Boolean(typeof localStorage !== 'undefined' && localStorage.getItem('username'));
+            const isUserAuthed = Boolean(background.currentUserInfo?.logged_in || hasSavedAccount);
+            if (!isUserAuthed) {
                 goToScreen('account');
                 return;
             }
@@ -1401,7 +1403,9 @@ runWhenReady(() => {
     // Render active screen immediately, defer non-visible tabs to next animation frame
     requestAnimationFrame(() => {
         initStations();
-        if (background.currentUserInfo?.logged_in) {
+        const hasSavedAccount = Boolean(typeof localStorage !== 'undefined' && localStorage.getItem('username'));
+        const isUserAuthed = Boolean(background.currentUserInfo?.logged_in || hasSavedAccount);
+        if (isUserAuthed) {
             updateStations();
             setTimeout(() => {
                 background?.throttleRefreshStationsList?.()?.then?.(() => {
@@ -1423,6 +1427,7 @@ runWhenReady(() => {
                 if (showAccountFn) {
                     showAccountFn();
                 }
+                updateStations();
                 if (!background.currentStationToken && (!background.currentSong || !background.currentSong.songName) && bg_config.currentScreen === 'account') {
                     goToScreen('stations');
                 }
@@ -1433,6 +1438,7 @@ runWhenReady(() => {
                 goToScreen('account');
             }
             updatePlayer();
+            updateHistory();
         });
     }
 
