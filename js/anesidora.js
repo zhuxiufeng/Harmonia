@@ -193,7 +193,26 @@ async function sendRequest(methodOrParams, body, encrypted = true, retries = 0) 
                 // Purposefully do not retry.
                 return {
                     ok: false,
+                    code: 0,
                     reason: "Internal Pandora error. Might be rate limited.",
+                    response: responseBody
+                };
+            }
+
+            case 12: { // RESTRICTED_COUNTRY (Geo-blocked outside US)
+                return {
+                    ok: false,
+                    code: 12,
+                    reason: "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理并确保插件流量走代理。",
+                    response: responseBody
+                };
+            }
+
+            case 1002: { // INVALID_CREDENTIALS / USER_LOGIN_FAILED
+                return {
+                    ok: false,
+                    code: 1002,
+                    reason: "账号或密码错误 (Code 1002)。",
                     response: responseBody
                 };
             }
@@ -210,13 +229,7 @@ async function sendRequest(methodOrParams, body, encrypted = true, retries = 0) 
                     currentUserInfo.authToken = null;
                     let partnerResult = await partnerLogin();
                     if (!partnerResult.ok) {
-                        // What?
-                        // This should never fail, unless we're having network errors
-                        // But that's not the case, since we got a response from
-                        // Pandora that says "that token's no good."
-
-                        // Seriously, what?
-                        return;
+                        return partnerResult;
                     }
                     let userLoginResult = await userLogin();
                     if (userLoginResult.ok) {
@@ -229,6 +242,7 @@ async function sendRequest(methodOrParams, body, encrypted = true, retries = 0) 
                     // Do not retry.
                     return {
                         ok: false,
+                        code: 1001,
                         reason: "User auth token expired, and could not be refreshed.",
                         response: responseBody
                     }
@@ -237,21 +251,26 @@ async function sendRequest(methodOrParams, body, encrypted = true, retries = 0) 
 
             default:
                 console.log("sendRequest failed: ", parametersString, body, responseBody);
+                if (typeof responseBody.code === 'number' && responseBody.code > 1000) {
+                    return {
+                        ok: false,
+                        code: responseBody.code,
+                        reason: responseBody.message || `Pandora API error (Code ${responseBody.code})`,
+                        response: responseBody
+                    };
+                }
         }
 
         if (retries < maxRetries) {
             // Wait for a bit before retrying.
             // This avoids retrying too fast causing errors.
             await new Promise(res => setTimeout(res, ((2**retries)-1) * 1000));
-            // First retry would take one second,
-            // Second would take three,
-            // Third would take seven.
-            // Current max is three, but next retry would take fifteen seconds.
             return await sendRequest(methodOrParams, body, encrypted, retries + 1)
         } else {
             return {
                 ok: false,
-                reason: `Max retries reached. Response code: ${responseBody.code}`,
+                code: responseBody.code,
+                reason: responseBody.message || `Max retries reached. Response code: ${responseBody.code}`,
                 response: responseBody
             }
         }
@@ -396,16 +415,26 @@ async function userLogin(
     );
 
     if (!loginResponse || !loginResponse.ok) {
-        if (loginResponse?.response?.code === 1002) {
+        let code = loginResponse?.code || loginResponse?.response?.code;
+        if (code === 1002) {
             return {
                 ok: false,
-                reason: "Username or password is incorrect."
+                code: 1002,
+                reason: "账号或密码错误 (Code 1002)。请检查您的 Pandora 登录信息。"
+            };
+        }
+        if (code === 12) {
+            return {
+                ok: false,
+                code: 12,
+                reason: "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理。"
             };
         }
 
         return {
             ok: false,
-            reason: "Error: " + (loginResponse?.reason || "Login failed")
+            code: code,
+            reason: loginResponse?.reason || "登录失败 (Login failed)"
         };
     }
 
@@ -479,18 +508,30 @@ async function partnerLogin() {
         deviceModel: "android-generic",
         includeUrls: true
     };
-    let partnerLoginRequest = await sendRequest("auth.partnerLogin", body, false);
+    let partnerLoginRequest = await sendRequest("auth.partnerLogin", body, false, maxRetries);
     if (!partnerLoginRequest || !partnerLoginRequest.ok || !partnerLoginRequest.response) {
+        let code = partnerLoginRequest?.code || partnerLoginRequest?.response?.code;
+        let reason = partnerLoginRequest?.reason || "Could not reach Pandora partner API.";
+        if (code === 12) {
+            reason = "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理。";
+        }
         return {
             ok: false,
-            reason: partnerLoginRequest?.reason || "Could not reach Pandora partner API."
+            code: code,
+            reason: reason
         };
     }
     let response = partnerLoginRequest.response;
     if (!response || !response.result || !('syncTime' in response.result)) {
+        let code = response?.code;
+        let reason = response?.message || "Partner login failed, somehow.";
+        if (code === 12) {
+            reason = "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理。";
+        }
         return {
             ok: false,
-            reason: response?.message || "Partner login failed, somehow."
+            code: code,
+            reason: reason
         };
     }
 

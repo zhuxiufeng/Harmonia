@@ -1332,6 +1332,22 @@ runWhenReady(() => {
                 if (loginButton.classList.contains('active')) {
                     return;
                 }
+
+                const resetLoginBtn = (isWarning = false) => {
+                    loginButton.classList.remove('active');
+                    if (isWarning) {
+                        loginButton.classList.add('warning');
+                    } else {
+                        loginButton.classList.remove('warning');
+                    }
+                    if (loginButton.querySelector('.icon')) {
+                        loginButton.replaceChild(
+                            getNewIconElem('login'),
+                            loginButton.querySelector('.icon')
+                        );
+                    }
+                };
+
                 // Change the login button to reflect that we're doing something:
                 loginButton.classList.add('active');
                 loginButton.classList.remove('warning');
@@ -1341,15 +1357,26 @@ runWhenReady(() => {
                         loginButton.querySelector('.icon')
                     );
                 }
+                if (loginErrorContainer) {
+                    loginErrorContainer.innerText = '\n';
+                }
 
                 // Get the contents of our username and password text boxes
                 let formData = new FormData(loginForm);
-                // Actually log in using the email and password from the text boxes
-                background.userLogin(formData.get('email'), formData.get('password')).then(result => {
-                    // OK, we've tried to log in. What's the result?
+                const email = formData.get('email');
+                const password = formData.get('password');
 
-                    if (result.ok) {
+                // Actually log in using the email and password from the text boxes
+                const loginPromise = (background && typeof background.userLogin === 'function')
+                    ? background.userLogin(email, password)
+                    : Promise.reject(new Error("后台服务未就绪，请重新打开插件重试"));
+
+                loginPromise.then(result => {
+                    // OK, we've tried to log in. What's the result?
+                    if (result && result.ok) {
                         // Good result! Switch to stations view and refresh stations
+                        loginButton.classList.remove('active');
+                        loginButton.classList.remove('warning');
                         showAccount();
                         goToScreen('stations');
                         updateStations();
@@ -1363,17 +1390,22 @@ runWhenReady(() => {
                         });
                     } else {
                         // Bad result! Show the error message.
+                        let errText = result?.reason || "登录失败，请检查账号密码或网络连接。";
+                        if (result?.code === 12 || (typeof errText === 'string' && (errText.includes('Code 12') || errText.includes('12')))) {
+                            errText = "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理并确保插件流量走代理。";
+                        }
                         if (loginErrorContainer) {
-                            loginErrorContainer.innerText = result.reason ?? '\n';
+                            loginErrorContainer.innerText = errText;
                         }
-
-                        loginButton.classList.remove('active');
-                        loginButton.classList.add('warning');
-                        if (loginButton.querySelector('.icon')) {
-                            loginButton.replaceChild(getNewIconElem('login'), loginButton.querySelector('.icon'));
-                        }
+                        resetLoginBtn(true);
                     }
-                })
+                }).catch(err => {
+                    let errMsg = err?.message || String(err);
+                    if (loginErrorContainer) {
+                        loginErrorContainer.innerText = "登录异常: " + errMsg;
+                    }
+                    resetLoginBtn(true);
+                });
             });
         }
 

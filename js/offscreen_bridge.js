@@ -220,7 +220,7 @@ async function handleAction(action, args = {}) {
         }
         return loginRes;
       }
-      return false;
+      return { ok: false, reason: "后台播放器未就绪，请稍候重试" };
 
     case 'setCurrentTime':
       if (player && typeof args.currentTime === 'number') {

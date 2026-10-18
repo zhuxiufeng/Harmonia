@@ -97,6 +97,10 @@ chrome.commands.onCommand.addListener(async (command) => {
     type: 'COMMAND',
     command: command
   }).catch(() => {});
+});
+
+// Immediately initialize declarativeNetRequest rules on worker evaluation
+setupRules().catch((err) => console.warn('[SW] setupRules error:', err));
 // Long-lived keep-alive port from offscreen document to prevent service worker hibernation
 const activeKeepAlivePorts = new Set();
 chrome.runtime.onConnect.addListener((port) => {

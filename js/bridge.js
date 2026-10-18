@@ -32,12 +32,12 @@
           triggerUpdateCallbacks();
           triggerDrawCallbacks();
         }
-        return response.result;
+        return response.result !== undefined ? response.result : { ok: true };
       }
-      return null;
+      return { ok: false, reason: response?.error || 'Background service did not respond.' };
     } catch (e) {
       console.warn(`[Bridge] Failed to call action "${action}":`, e);
-      return null;
+      return { ok: false, reason: e?.message || 'Failed to call background action.' };
     }
   }
 
