@@ -1,9 +1,8 @@
 "use strict";
 /** @type {keyof typeof ALL_SCREENS} */
-background?.interactionHappened();
 
 // Do this before page renders so transition animation does not play
-document.documentElement.style.setProperty("--current-screen-index", ALL_SCREENS.indexOf(bg_config.currentScreen));
+document.documentElement.style.setProperty("--current-screen-index", ALL_SCREENS.indexOf(bg_config?.currentScreen || 'playing'));
 
 if (window.location.search) {
     let searchParams = new URLSearchParams(window.location.search);
@@ -1366,14 +1365,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (background.currentUserInfo?.logged_in) {
         updateStations();
-        background?.throttleRefreshStationsList?.().then?.(() => {
-            if (stationsScreen && !stationsScreen.contains(document.activeElement)) {
-                // If user is typing in the stations search bar or otherwise interacting
-                // with the pane, don't shift it under them.
-
-                updateStations();
-            }
-        })
+        setTimeout(() => {
+            background?.throttleRefreshStationsList?.()?.then?.(() => {
+                if (stationsScreen && !stationsScreen.contains(document.activeElement)) {
+                    updateStations();
+                }
+            });
+        }, 120);
     }
 
     initAccount();

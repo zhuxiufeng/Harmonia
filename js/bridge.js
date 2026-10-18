@@ -17,7 +17,7 @@
   };
 
   let pendingInitResolvers = [];
-  let isStateReady = false;
+  let isStateReady = true;
 
   async function callAction(action, args = {}) {
     try {

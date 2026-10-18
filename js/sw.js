@@ -28,8 +28,8 @@ export async function ensureOffscreen() {
   }
   creatingOffscreenPromise = chrome.offscreen.createDocument({
     url: chrome.runtime.getURL('offscreen.html'),
-    reasons: ['AUDIO_PLAYBACK'],
-    justification: 'Pandora radio music playback'
+    reasons: ['AUDIO_PLAYBACK', 'LOCAL_STORAGE'],
+    justification: 'Pandora radio music playback and cached state storage'
   }).catch((err) => {
     if (!err.message?.includes('Only a single offscreen document')) {
       console.error('Failed to create offscreen document:', err);
@@ -99,9 +99,30 @@ chrome.commands.onCommand.addListener(async (command) => {
   }).catch(() => {});
 });
 
+let lastStateSnapshot = null;
+
 // Forwarding and handling messages between components
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message !== 'object') return;
+
+  if (message.type === 'PLAYER_EVENT') {
+    lastStateSnapshot = {
+      currentSong: message.currentSong,
+      prevSongs: message.prevSongs,
+      currentStationToken: message.currentStationToken,
+      stationsArray: message.stationsArray,
+      stationsByToken: message.stationsByToken,
+      currentUserInfo: message.currentUserInfo,
+      playerState: message.playerState,
+    };
+  }
+
+  if (message.type === 'GET_STATE') {
+    if (lastStateSnapshot) {
+      sendResponse({ ok: true, state: lastStateSnapshot });
+      return;
+    }
+  }
 
   if (message.type === 'ENSURE_OFFSCREEN') {
     ensureOffscreen().then(() => sendResponse({ ok: true }));
@@ -212,5 +233,5 @@ chrome.windows.onRemoved.addListener((windowId) => {
   }
 });
 
-// Waking up offscreen and setting up rules upon worker evaluation
-setupRules().then(ensureOffscreen).catch(console.error);
+// Ensure offscreen document is ready in background
+ensureOffscreen().catch(() => {});

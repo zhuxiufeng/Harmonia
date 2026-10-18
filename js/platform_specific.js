@@ -26,10 +26,10 @@ function get_action() {
 
 function platform_specific() {
     function getPopupUrl() {
-        let useablePopupURL = '/cozy.htm';
+        let useablePopupURL = 'cozy.htm';
         try {
-            let currentPresetID = config.selectedPreset;
-            let allPresets = config.presets;
+            let currentPresetID = config?.selectedPreset;
+            let allPresets = config?.presets;
 
             if (currentPresetID && allPresets) {
                 let currentPreset = allPresets.find(e => e.id === currentPresetID);
@@ -39,12 +39,14 @@ function platform_specific() {
 
                         for (let matchType of ['light', 'dark']) {
                             if (!selectedMatchPresets[matchType]) {
-                                selectedMatchPresets[matchType] = allPresets.find(e => e.cssVariables['color-scheme-type'] === matchType)?.id;
+                                selectedMatchPresets[matchType] = allPresets.find(e => e.cssVariables?.['color-scheme-type'] === matchType)?.id;
 
-                                if (!selectedMatchPresets[matchType]) {
-                                    let presetFromDefaults = DEFAULTS.presets.find(e => e.cssVariables['color-scheme-type'] === matchType);
-                                    allPresets.push(presetFromDefaults);
-                                    selectedMatchPresets[matchType] = presetFromDefaults.name;
+                                if (!selectedMatchPresets[matchType] && typeof DEFAULTS !== 'undefined') {
+                                    let presetFromDefaults = DEFAULTS.presets.find(e => e.cssVariables?.['color-scheme-type'] === matchType);
+                                    if (presetFromDefaults) {
+                                        allPresets.push(presetFromDefaults);
+                                        selectedMatchPresets[matchType] = presetFromDefaults.name;
+                                    }
                                 }
                             }
                         }
@@ -55,25 +57,14 @@ function platform_specific() {
                         currentPreset = allPresets.find(e => e.id === selectedMatchPresets[colorScheme]);
                     }
 
-                    useablePopupURL = `/${currentPreset.playerType}.htm`;
+                    if (currentPreset?.playerType) {
+                        useablePopupURL = `${currentPreset.playerType}.htm`;
+                    }
                 }
             }
         } catch(e) {
             console.error('Error resolving popup URL:', e);
         }
         return useablePopupURL;
-    }
-
-    const action = get_action();
-    if (!is_android() && action?.setPopup) {
-        action.setPopup({ popup: getPopupUrl() }).catch(() => {});
-    }
-
-    if (action?.onClicked) {
-        action.onClicked.addListener(() => {
-            get_browser().tabs.create({
-                url: getPopupUrl()
-            });
-        });
     }
 }
