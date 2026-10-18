@@ -1391,7 +1391,8 @@ runWhenReady(() => {
                     } else {
                         // Bad result! Show the error message.
                         let errText = result?.reason || "登录失败，请检查账号密码或网络连接。";
-                        if (result?.code === 12 || (typeof errText === 'string' && (errText.includes('Code 12') || errText.includes('12')))) {
+                        let isCode12 = result?.code === 12 || (typeof errText === 'string' && /code\s*12\b/i.test(errText));
+                        if (isCode12) {
                             errText = "Pandora 仅限美国境内使用 (Code 12)。若在中国大陆，请开启美国节点 VPN/代理并确保插件流量走代理。";
                         }
                         if (loginErrorContainer) {

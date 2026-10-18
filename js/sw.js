@@ -135,6 +135,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       currentUserInfo: message.currentUserInfo,
       playerState: message.playerState,
     };
+    return;
+  }
+
   if (message.type === 'ENSURE_OFFSCREEN') {
     ensureOffscreen().then(() => sendResponse({ ok: true }));
     return true;

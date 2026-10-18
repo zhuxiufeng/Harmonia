@@ -21,11 +21,23 @@
 
   async function callAction(action, args = {}) {
     try {
-      const response = await chrome.runtime.sendMessage({
+      let response = await chrome.runtime.sendMessage({
         type: 'CALL_ACTION',
         action,
         args,
-      });
+      }).catch(() => null);
+
+      if (!response) {
+        // If no response, offscreen document may need to be spun up
+        await chrome.runtime.sendMessage({ type: 'ENSURE_OFFSCREEN' }).catch(() => {});
+        await new Promise((r) => setTimeout(r, 120));
+        response = await chrome.runtime.sendMessage({
+          type: 'CALL_ACTION',
+          action,
+          args,
+        }).catch(() => null);
+      }
+
       if (response && response.ok) {
         if (response.state) {
           applyStateSnapshot(response.state);
